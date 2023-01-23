@@ -39,7 +39,7 @@ class _HomeState extends State<Home> {
                     color: Colors.white,
                   ),
                 )
-              : Book(path: file.path),
+              : Book(path: file),
         ],
       ),
     );
