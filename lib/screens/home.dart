@@ -1,8 +1,18 @@
+import 'dart:io';
+
 import 'package:entry_books/screens/book.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  File file = File('');
 
   @override
   Widget build(BuildContext context) {
@@ -11,24 +21,27 @@ class Home extends StatelessWidget {
       body: Column(
         children: [
           const SizedBox(height: 50),
-          Book(path: 'Atomic_Habits_James_Clear.pdf')
+          file.path == ''
+              ? IconButton(
+                  onPressed: (() async {
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf', 'doc'],
+                    );
+                    if (result != null) {
+                      setState(() {
+                        file = File(result.files.single.path!);
+                      });
+                    }
+                  }),
+                  icon: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                )
+              : Book(path: file.path),
         ],
       ),
     );
   }
 }
-
-/*Widget book() {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 80),
-    child: Container(
-      decoration: BoxDecoration(
-        border: Border.all(),
-      ),
-      child: SfPdfViewer.asset(
-        'assets/Atomic Habits James Clear.pdf',
-        scrollDirection: PdfScrollDirection.horizontal,
-      ),
-    ),
-  );
-}*/

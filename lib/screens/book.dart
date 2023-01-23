@@ -13,8 +13,8 @@ class Book extends StatelessWidget {
         backgroundColor: Colors.transparent,
         fixedSize: const Size(120, 150),
       ),
-      child: PdfDocumentLoader.openAsset(
-        'assets/$path',
+      child: PdfDocumentLoader.openFile(
+        path,
         pageNumber: 1,
         pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
           size: const Size(80, 120),
