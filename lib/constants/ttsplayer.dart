@@ -79,6 +79,13 @@ class _TTSPlayerState extends State<TTSPlayer> {
       }
     }
 
+    /*Future<String> extractTextFromPdfPage(String pdfPath, int page) async {
+      final pw.Document doc = pw.Document.load(pdfPath);
+      final targetPage = doc.getPage(page);
+      final String text = pw.getText(targetPage);
+      return text;
+    }*/
+
     Future<void> explainPage(int pageNumber) async {
       //Load an existing PDF document.
       pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
