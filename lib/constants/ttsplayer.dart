@@ -10,9 +10,9 @@ import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_pdf/pdf.dart' as pdfdoc;
 
 class TTSPlayer extends StatefulWidget {
-  File path;
+  File file;
   int page;
-  TTSPlayer({super.key, required this.page, required this.path});
+  TTSPlayer({super.key, required this.page, required this.file});
 
   @override
   State<TTSPlayer> createState() => _TTSPlayerState();
@@ -20,7 +20,7 @@ class TTSPlayer extends StatefulWidget {
 
 class _TTSPlayerState extends State<TTSPlayer> {
   Future<List<int>> _readDocumentData(String name) async {
-    final ByteData data = await rootBundle.load('assets/$name');
+    final ByteData data = await rootBundle.load(name);
     return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   }
 
@@ -82,7 +82,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     Future<void> explainPage(int pageNumber) async {
       //Load an existing PDF document.
       pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
-          inputBytes: await _readDocumentData('Atomic_Habits_James_Clear.pdf'));
+          inputBytes: await _readDocumentData(widget.file.path));
 
       //Create a new instance of the PdfTextExtractor.
       pdfdoc.PdfTextExtractor extractor = pdfdoc.PdfTextExtractor(document);
@@ -117,7 +117,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 children: [
                   Center(
                     child: render.PdfDocumentLoader.openFile(
-                      widget.path.path,
+                      widget.file.path,
                       pageNumber: 1,
                       pageBuilder: (context, textureBuilder, pageSize) =>
                           textureBuilder(
