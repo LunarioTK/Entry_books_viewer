@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class CurrenBook extends StatefulWidget {
-  File path;
-  CurrenBook({super.key, required this.path});
+  File file;
+  CurrenBook({super.key, required this.file});
 
   @override
   State<CurrenBook> createState() => _CurrenBookState();
@@ -28,7 +28,7 @@ class _CurrenBookState extends State<CurrenBook> {
               scaleY: 1.25,
               origin: const Offset(0.0, 200.0),
               child: SfPdfViewer.file(
-                widget.path,
+                widget.file,
                 scrollDirection: PdfScrollDirection.horizontal,
                 key: pdfViewerKey,
                 controller: controller,
@@ -40,7 +40,7 @@ class _CurrenBookState extends State<CurrenBook> {
               alignment: Alignment.bottomCenter,
               child: TTSPlayer(
                 page: controller.pageNumber,
-                path: widget.path,
+                file: widget.file,
               ),
             ),
           ],

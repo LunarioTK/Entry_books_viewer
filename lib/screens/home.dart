@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:entry_books/screens/book.dart';
+import 'package:entry_books/constants/book.dart';
+import 'package:entry_books/constants/uicolor.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -17,7 +18,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: uiColor,
       body: Column(
         children: [
           const SizedBox(height: 50),
@@ -39,7 +40,7 @@ class _HomeState extends State<Home> {
                     color: Colors.white,
                   ),
                 )
-              : Book(path: file),
+              : Book(file: file),
         ],
       ),
     );
