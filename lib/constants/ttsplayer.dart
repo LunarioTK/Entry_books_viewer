@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:entry_books/services/bookinfo.dart';
 import 'package:entry_books/services/openai_api.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show ByteData, rootBundle;
 import 'package:pdf_render/pdf_render_widgets.dart' as render;
 
 import 'package:http/http.dart' as http;
@@ -19,10 +18,10 @@ class TTSPlayer extends StatefulWidget {
 }
 
 class _TTSPlayerState extends State<TTSPlayer> {
-  Future<List<int>> _readDocumentData(String name) async {
+  /*Future<List<int>> _readDocumentData(String name) async {
     final ByteData data = await rootBundle.load(name);
     return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
