@@ -20,7 +20,7 @@ class BookInfo extends ChangeNotifier {
   // Setting Page Number
   set setPageNumber(int newPageNumber) {
     _pageNumber = newPageNumber;
-    notifyListeners();
+    //notifyListeners();
   }
 
   // Getting Page Number

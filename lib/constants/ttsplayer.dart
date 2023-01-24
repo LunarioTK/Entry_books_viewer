@@ -58,7 +58,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       Map<String, dynamic> body = {
         "prompt":
             'Explica-me este texto por topicos e o mais resumido possivel "$userQuest", em português',
-        "model": "text-babbage-001",
+        "model": "text-davinci-002",
         "max_tokens": 1200,
         "temperature": 0.0,
       };
@@ -92,7 +92,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       pdfdoc.PdfTextExtractor extractor = pdfdoc.PdfTextExtractor(document);
 
       //Extract all the text from the document.
-      String text = extractor.extractText(startPageIndex: (pageNumber + 1));
+      String text = extractor.extractText(startPageIndex: (pageNumber));
 
       getResponse(text);
     }
