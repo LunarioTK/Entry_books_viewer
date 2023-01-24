@@ -23,31 +23,39 @@ class _HomeState extends State<Home> {
 
     return Scaffold(
       backgroundColor: uiColor,
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-          file.path == ''
-              ? IconButton(
-                  onPressed: (() async {
-                    final result = await FilePicker.platform.pickFiles(
-                      type: FileType.custom,
-                      allowedExtensions: ['pdf', 'doc'],
-                    );
-                    if (result != null) {
-                      setState(() {
-                        file = File(result.files.single.path!);
-                        bookInfo.setFile = file;
-                      });
-                    }
-                  }),
-                  icon: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                  ),
-                )
-              : const Book(),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 40),
+            file.path == ''
+                ? Align(
+                    alignment: Alignment.center,
+                    child: ElevatedButton(
+                      onPressed: (() async {
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.custom,
+                          allowedExtensions: ['pdf', 'doc'],
+                        );
+                        if (result != null) {
+                          setState(() {
+                            file = File(result.files.single.path!);
+                            bookInfo.setFile = file;
+                          });
+                        }
+                      }),
+                      child: Image.asset(
+                        'assets/bookwithapplebgrm.png',
+                        height: 70,
+                        width: 50,
+                      ),
+                    ),
+                  )
+                : const Book(),
+          ],
+        ),
       ),
     );
   }
 }
+
+//'assets/bookwithapplebgrm.png'
