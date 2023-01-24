@@ -1,18 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:entry_books/services/bookinfo.dart';
 import 'package:entry_books/services/openai_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show ByteData, rootBundle;
 import 'package:pdf_render/pdf_render_widgets.dart' as render;
 
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart' as pdfdoc;
 
 class TTSPlayer extends StatefulWidget {
-  File file;
-  int page;
-  TTSPlayer({super.key, required this.page, required this.file});
+  const TTSPlayer({super.key});
 
   @override
   State<TTSPlayer> createState() => _TTSPlayerState();
@@ -27,6 +27,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
   @override
   Widget build(BuildContext context) {
     String? chatResponse;
+    var bookInfo = context.watch<BookInfo>();
 
     void showResult(String? text) {
       showDialog(
@@ -79,23 +80,19 @@ class _TTSPlayerState extends State<TTSPlayer> {
       }
     }
 
-    /*Future<String> extractTextFromPdfPage(String pdfPath, int page) async {
-      final pw.Document doc = pw.Document.load(pdfPath);
-      final targetPage = doc.getPage(page);
-      final String text = pw.getText(targetPage);
-      return text;
-    }*/
-
     Future<void> explainPage(int pageNumber) async {
       //Load an existing PDF document.
       pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
-          inputBytes: await _readDocumentData(widget.file.path));
+          inputBytes: File(bookInfo.getFile.path).readAsBytesSync());
+
+      /*pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
+          inputBytes: await _readDocumentData(widget.file.path));*/
 
       //Create a new instance of the PdfTextExtractor.
       pdfdoc.PdfTextExtractor extractor = pdfdoc.PdfTextExtractor(document);
 
       //Extract all the text from the document.
-      String text = extractor.extractText(startPageIndex: pageNumber);
+      String text = extractor.extractText(startPageIndex: (pageNumber + 1));
 
       getResponse(text);
     }
@@ -124,7 +121,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 children: [
                   Center(
                     child: render.PdfDocumentLoader.openFile(
-                      widget.file.path,
+                      bookInfo.getFile.path,
                       pageNumber: 1,
                       pageBuilder: (context, textureBuilder, pageSize) =>
                           textureBuilder(
@@ -145,7 +142,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
             subtitle: const Text('02:24'),
             trailing: IconButton(
               onPressed: (() {
-                explainPage(widget.page);
+                explainPage(bookInfo.getPageNumber);
               }),
               color: Colors.black,
               iconSize: 30,
