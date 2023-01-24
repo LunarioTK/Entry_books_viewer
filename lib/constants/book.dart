@@ -1,13 +1,10 @@
-import 'dart:io';
-
 import 'package:entry_books/services/bookinfo.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_render/pdf_render_widgets.dart';
 import 'package:provider/provider.dart';
 
 class Book extends StatelessWidget {
-  File file;
-  Book({super.key, required this.file});
+  const Book({super.key});
 
   @override
   Widget build(BuildContext context) {
