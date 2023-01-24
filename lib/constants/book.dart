@@ -1,8 +1,9 @@
 import 'dart:io';
 
-import 'package:entry_books/screens/currentbook.dart';
+import 'package:entry_books/services/bookinfo.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_render/pdf_render_widgets.dart';
+import 'package:provider/provider.dart';
 
 class Book extends StatelessWidget {
   File file;
@@ -10,12 +11,11 @@ class Book extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var bookInfo = context.watch<BookInfo>();
+
     return ElevatedButton(
       onPressed: (() {
-        final Future future =
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return CurrenBook(file: file);
-        }));
+        Navigator.pushNamed(context, '/currentbook');
       }),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.all(0.0),
@@ -24,7 +24,7 @@ class Book extends StatelessWidget {
         elevation: 5,
       ),
       child: PdfDocumentLoader.openFile(
-        file.path,
+        bookInfo.getFile.path,
         pageNumber: 1,
         pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
           size: const Size(80, 120),

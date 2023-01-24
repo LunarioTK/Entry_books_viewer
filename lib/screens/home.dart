@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:entry_books/constants/book.dart';
 import 'package:entry_books/constants/uicolor.dart';
+import 'package:entry_books/services/bookinfo.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -17,6 +19,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    var bookInfo = context.watch<BookInfo>();
+
     return Scaffold(
       backgroundColor: uiColor,
       body: Column(
@@ -32,6 +36,7 @@ class _HomeState extends State<Home> {
                     if (result != null) {
                       setState(() {
                         file = File(result.files.single.path!);
+                        bookInfo.setFile = file;
                       });
                     }
                   }),
