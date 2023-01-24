@@ -45,7 +45,7 @@ class _HomeState extends State<Home> {
                     color: Colors.white,
                   ),
                 )
-              : Book(file: file),
+              : const Book(),
         ],
       ),
     );
