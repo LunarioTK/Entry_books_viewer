@@ -20,37 +20,49 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     var bookInfo = context.watch<BookInfo>();
+    late FilePickerResult? result;
+    int count = 0;
 
     return Scaffold(
       backgroundColor: uiColor,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            const SizedBox(height: 40),
             file.path == ''
-                ? Align(
-                    alignment: Alignment.center,
-                    child: ElevatedButton(
-                      onPressed: (() async {
-                        final result = await FilePicker.platform.pickFiles(
-                          type: FileType.custom,
-                          allowedExtensions: ['pdf', 'doc'],
-                        );
-                        if (result != null) {
-                          setState(() {
-                            file = File(result.files.single.path!);
-                            bookInfo.setFile = file;
-                          });
-                        }
-                      }),
-                      child: Image.asset(
-                        'assets/bookwithapplebgrm.png',
-                        height: 70,
-                        width: 50,
-                      ),
+                ? Container()
+                : GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
                     ),
-                  )
-                : const Book(),
+                    itemCount: bookInfo.getbooksAdded,
+                    itemBuilder: (BuildContext context, int index) {
+                      return const Book();
+                    }),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: FloatingActionButton(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  onPressed: (() async {
+                    result = null;
+                    result = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf', 'doc'],
+                    );
+                    if (result != null) {
+                      file = File(result!.files.single.path!);
+                      bookInfo.setFile = file;
+                      count++;
+                      bookInfo.setbooksAdded = count;
+                    }
+                  }),
+                  child: Image.asset('assets/bookwithapplebgrm.png'),
+                ),
+              ),
+            ),
           ],
         ),
       ),
