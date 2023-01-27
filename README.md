@@ -1,16 +1,15 @@
-# entry_books
+# Entry Book
+With Entry Book, you can import documents from your device and view them as a book! Our application makes reading files more fun and interactive.
 
-A new Flutter project.
+## How to use
+Open the application
+Select "Import file"
+Choose the desired file from your device
+Enjoy reading as if you were reading a real book!
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Features
+Landscape or portrait reading mode
+Customization options for font and size
+Easy navigation by chapters and pages
+Try it now and experience the difference of reading with Entry Book!
+Note: The app is currently under development and the download feature will be added soon.
