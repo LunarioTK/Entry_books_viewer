@@ -11,7 +11,8 @@ import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart' as pdfdoc;
 
 class TTSPlayer extends StatefulWidget {
-  const TTSPlayer({super.key});
+  File file;
+  TTSPlayer({super.key, required this.file});
 
   @override
   State<TTSPlayer> createState() => _TTSPlayerState();
@@ -54,10 +55,11 @@ class _TTSPlayerState extends State<TTSPlayer> {
       };
 
       //! Change to text-davinci-002 later
+      //* text-babbage-001
       Map<String, dynamic> body = {
         "prompt":
-            'Explica-me este texto por topicos e o mais resumido possivel "$userQuest", em português',
-        "model": "text-davinci-002",
+            'Explica-me este texto por topicos e o mais resumido possivel "$userQuest", em português de portugal',
+        "model": "text-babbage-001",
         "max_tokens": 1200,
         "temperature": 0.0,
       };
@@ -82,7 +84,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     Future<void> explainPage(int pageNumber) async {
       //Load an existing PDF document.
       pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
-          inputBytes: File(bookInfo.getFile.path).readAsBytesSync());
+          inputBytes: File(widget.file.path).readAsBytesSync());
 
       /*pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
           inputBytes: await _readDocumentData(widget.file.path));*/
@@ -91,7 +93,9 @@ class _TTSPlayerState extends State<TTSPlayer> {
       pdfdoc.PdfTextExtractor extractor = pdfdoc.PdfTextExtractor(document);
 
       //Extract all the text from the document.
-      String text = extractor.extractText(startPageIndex: (pageNumber));
+      String text = extractor.extractText(startPageIndex: (pageNumber - 1));
+
+      //print(text);
 
       getResponse(text);
     }
@@ -120,7 +124,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 children: [
                   Center(
                     child: render.PdfDocumentLoader.openFile(
-                      bookInfo.getFile.path,
+                      widget.file.path,
                       pageNumber: 1,
                       pageBuilder: (context, textureBuilder, pageSize) =>
                           textureBuilder(
