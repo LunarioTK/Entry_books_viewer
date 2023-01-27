@@ -7,19 +7,17 @@ class BookInfo extends ChangeNotifier {
   File _file = File('path');
   int _pageNumber = 0;
   int _booksAdded = 0;
-  List<BookModel> books = [];
+  final List<BookModel> _books = [];
 
-  void bookInfo() {
-    for (var i = 0; i < getbooksAdded; i++) {
-      books.add(
-        BookModel(bookId: i, file: getFile),
-      );
-    }
+  // Getting books available
+  List<BookModel> get allBooks {
+    return _books;
   }
 
   // Setting File
   set setFile(File newFile) {
     _file = newFile;
+    _books.add(BookModel(bookId: getbooksAdded, file: newFile));
     notifyListeners();
   }
 
