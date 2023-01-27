@@ -31,13 +31,17 @@ class _HomeState extends State<Home> {
             file.path == ''
                 ? Container()
                 : GridView.builder(
+                    clipBehavior: Clip.none,
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
+                      childAspectRatio: 2 / 3,
                     ),
-                    itemCount: bookInfo.getbooksAdded,
+                    itemCount: bookInfo.allBooks.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return const Book();
+                      return Book(
+                        file: bookInfo.allBooks[index].file,
+                      );
                     }),
             Align(
               alignment: Alignment.bottomRight,
@@ -50,7 +54,7 @@ class _HomeState extends State<Home> {
                     result = null;
                     result = await FilePicker.platform.pickFiles(
                       type: FileType.custom,
-                      allowedExtensions: ['pdf', 'doc'],
+                      allowedExtensions: ['pdf'],
                     );
                     if (result != null) {
                       file = File(result!.files.single.path!);

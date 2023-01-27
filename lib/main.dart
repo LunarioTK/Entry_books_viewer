@@ -1,4 +1,3 @@
-import 'package:entry_books/screens/currentbook.dart';
 import 'package:entry_books/screens/home.dart';
 import 'package:entry_books/services/bookinfo.dart';
 import 'package:flutter/material.dart';
@@ -15,13 +14,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => BookInfo(),
-      child: MaterialApp(
+      child: const MaterialApp(
         debugShowCheckedModeBanner: false,
-        initialRoute: '/',
-        routes: {
-          '/': (context) => const Home(),
-          '/currentbook': (context) => const CurrenBook()
-        },
+        home: Home(),
       ),
     );
   }
