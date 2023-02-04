@@ -23,8 +23,6 @@ class _CurrenBookState extends State<CurrenBook> {
   Widget build(BuildContext context) {
     var bookInfo = context.watch<BookInfo>();
     MediaQueryData media = MediaQuery.of(context);
-    double height = media.size.height;
-    double width = media.size.width;
 
     //final GlobalKey<SfPdfViewerState> pdfViewerKey = GlobalKey();
     PdfViewerController controller = PdfViewerController();
@@ -32,33 +30,38 @@ class _CurrenBookState extends State<CurrenBook> {
       body: SafeArea(
         child: Stack(
           children: [
-            PdfViewer.openFile(
-              widget.file.path,
-              viewerController: controller,
-              params: PdfViewerParams(
-                scrollDirection: Axis.horizontal,
-                layoutPages: (viewSize, pages) {
-                  List<Rect> rect = [];
-                  final viewWidth = viewSize.width;
-                  final viewHeight = viewSize.height;
-                  final maxHeight = pages.fold<double>(
-                      0.0, (maxHeight, page) => max(maxHeight, page.height));
-                  final maxWidth = pages.fold<double>(
-                      0.0, (maxWidth, page) => max(maxWidth, page.width));
-                  final ratioHeigth = viewHeight / maxHeight;
-                  final ratioWidth = viewWidth / maxWidth;
-                  var top = 0.0;
-                  for (var page in pages) {
-                    final width = page.width * ratioWidth;
-                    final height = page.height * ratioHeigth;
-                    final left = viewWidth > viewHeight
-                        ? (viewWidth / 2) - (width / 2)
-                        : 0.0;
-                    rect.add(Rect.fromLTWH(left, top, width, height));
-                    top += height + 8;
-                  }
-                  return rect;
-                },
+            Padding(
+              padding: const EdgeInsets.only(bottom: 100),
+              child: PdfViewer.openFile(
+                widget.file.path,
+                viewerController: controller,
+                params: PdfViewerParams(
+                  onInteractionEnd: (details) {
+                    bookInfo.setPageNumber = controller.currentPageNumber;
+                  },
+                  layoutPages: (viewSize, pages) {
+                    List<Rect> rect = [];
+                    final viewWidth = viewSize.width;
+                    final viewHeight = viewSize.height;
+                    final maxHeight = pages.fold<double>(
+                        0.0, (maxHeight, page) => max(maxHeight, page.height));
+                    final maxWidth = pages.fold<double>(
+                        0.0, (maxWidth, page) => max(maxWidth, page.width));
+                    final ratioHeigth = viewHeight / maxHeight;
+                    final ratioWidth = viewWidth / maxWidth;
+                    var top = 0.0;
+                    for (var page in pages) {
+                      final width = page.width * ratioWidth;
+                      final height = page.height * ratioHeigth;
+                      final left = viewWidth > viewHeight
+                          ? (viewWidth / 2) - (width / 2)
+                          : 0.0;
+                      rect.add(Rect.fromLTWH(left, top, width, height));
+                      top += height + 8;
+                    }
+                    return rect;
+                  },
+                ),
               ),
             ),
 
