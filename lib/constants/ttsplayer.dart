@@ -74,7 +74,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       //* text-babbage-001
       Map<String, dynamic> body = {
         "prompt":
-            'Explica-me este texto por topicos e o mais resumido possivel "$userQuest", em português de portugal',
+            'Explain this text to me by topic and as briefly as possible "$userQuest".',
         "model": "text-babbage-001",
         "max_tokens": 1200,
         "temperature": 0.0,
@@ -113,6 +113,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
           startPageIndex: (pageNumber == 0 ? 0 : pageNumber - 1));
 
       //print('Page number $pageNumber');
+      //print(text);
 
       getResponse(text);
     }
