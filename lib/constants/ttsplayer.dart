@@ -38,7 +38,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
               content: Scrollbar(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics()),
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
                   child: Text(text!),
                 ),
               ),
@@ -93,7 +94,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
       pdfdoc.PdfTextExtractor extractor = pdfdoc.PdfTextExtractor(document);
 
       //Extract all the text from the document.
-      String text = extractor.extractText(startPageIndex: (pageNumber - 1));
+      String text = extractor.extractText(
+          startPageIndex: (pageNumber == 0 ? 0 : pageNumber - 1));
 
       //print(text);
 
@@ -134,10 +136,11 @@ class _TTSPlayerState extends State<TTSPlayer> {
                     ),
                   ),
                   const Center(
-                      child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.black,
-                  )),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.black,
+                    ),
+                  ),
                 ],
               ),
             ),
