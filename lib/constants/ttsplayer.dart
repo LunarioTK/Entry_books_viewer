@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:entry_books/constants/uicolor.dart';
 import 'package:entry_books/services/bookinfo.dart';
 import 'package:entry_books/services/openai_api.dart';
 import 'package:flutter/material.dart';
@@ -34,13 +35,27 @@ class _TTSPlayerState extends State<TTSPlayer> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Explanation'),
+              title: const Text(
+                'Explanation',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              backgroundColor: uiColor,
               content: Scrollbar(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics(),
                   ),
-                  child: Text(text!),
+                  child: Text(
+                    text!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             );
@@ -97,7 +112,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       String text = extractor.extractText(
           startPageIndex: (pageNumber == 0 ? 0 : pageNumber - 1));
 
-      //print(text);
+      //print('Page number $pageNumber');
 
       getResponse(text);
     }
@@ -112,14 +127,14 @@ class _TTSPlayerState extends State<TTSPlayer> {
           width: 360,
           height: 70,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: uiColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
             leading: TextButton(
               onPressed: (() {}),
               style: TextButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.transparent,
                 fixedSize: const Size(20, 120),
               ),
               child: Stack(
@@ -135,22 +150,32 @@ class _TTSPlayerState extends State<TTSPlayer> {
                       ),
                     ),
                   ),
-                  const Center(
+                  Center(
                     child: Icon(
                       Icons.play_arrow_rounded,
-                      color: Colors.black,
+                      color: uiColor,
                     ),
                   ),
                 ],
               ),
             ),
-            title: const Text('Book name'),
-            subtitle: const Text('02:24'),
+            title: const Text(
+              'Book name',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            subtitle: const Text(
+              '02:24',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
             trailing: IconButton(
               onPressed: (() {
                 explainPage(bookInfo.getPageNumber);
               }),
-              color: Colors.black,
+              color: Colors.white,
               iconSize: 30,
               icon: const Icon(Icons.menu_book_rounded),
             ),
