@@ -20,6 +20,11 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     var bookInfo = context.watch<BookInfo>();
+    MediaQueryData media = MediaQuery.of(context);
+    double height = media.size.height;
+    double width = media.size.width;
+
+    double ratio = media.size.height / media.size.width;
     late FilePickerResult? result;
     int count = 0;
 
@@ -63,7 +68,22 @@ class _HomeState extends State<Home> {
                       bookInfo.setbooksAdded = count;
                     }
                   }),
-                  child: Image.asset('assets/bookwithapplebgrm.png'),
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        'assets/bookbgrm.png',
+                        height: height * 0.20,
+                        width: width * 0.20,
+                      ),
+                      const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Icon(
+                          Icons.add,
+                          weight: 5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
