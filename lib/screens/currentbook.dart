@@ -22,7 +22,6 @@ class _CurrenBookState extends State<CurrenBook> {
   @override
   Widget build(BuildContext context) {
     var bookInfo = context.watch<BookInfo>();
-    MediaQueryData media = MediaQuery.of(context);
 
     //final GlobalKey<SfPdfViewerState> pdfViewerKey = GlobalKey();
     PdfViewerController controller = PdfViewerController();
