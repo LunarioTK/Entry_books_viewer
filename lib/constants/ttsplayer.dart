@@ -107,48 +107,70 @@ class _TTSPlayerState extends State<TTSPlayer> {
     }
 
     Future<void> getText(int pageNumber) async {
-      if (pageNumbers.isEmpty) {
-        pageNumbers.add(pageNumber);
-        //Load an existing PDF document.
-        pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
-            inputBytes: File(widget.file.path).readAsBytesSync());
+      //pageNumbers.add(pageNumber);
+      //Load an existing PDF document.
+      pdfdoc.PdfDocument document = pdfdoc.PdfDocument(
+          inputBytes: File(widget.file.path).readAsBytesSync());
 
-        //Create a new instance of the PdfTextExtractor.
-        pdfdoc.PdfTextExtractor extractor = pdfdoc.PdfTextExtractor(document);
+      //Create a new instance of the PdfTextExtractor.
+      pdfdoc.PdfTextExtractor extractor = pdfdoc.PdfTextExtractor(document);
 
-        //Extract all the text from the document.
-        text = extractor.extractText(
-            startPageIndex: (pageNumber == 0 ? 0 : pageNumber - 1));
-      } else {
-        if (pageNumbers.contains(pageNumber)) {
-          text!;
-        }
-      }
+      //Extract all the text from the document.
+      text = extractor.extractText(
+          startPageIndex: (pageNumber == 0 ? 0 : pageNumber - 1));
     }
 
     // Play audio
     void playBook(String pageText) async {
       APIKey apiKey = APIKey();
+      String histId = '';
       String apiUrl =
           "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM";
+      String apiUrlHist = "https://api.elevenlabs.io/v1/history";
 
-      if (pageTextList.isEmpty) {
-        pageTextList.add(pageText);
-        Map<String, String> headers = {
-          'accept': 'audio/mpeg',
-          'xi-api-key': apiKey.getElevenLabsApiKey,
-          'Content-Type': 'application/json',
-        };
+      Map<String, String> headers = {
+        'accept': 'audio/mpeg',
+        'xi-api-key': apiKey.getElevenLabsApiKey,
+        'Content-Type': 'application/json',
+      };
 
-        Map<String, dynamic> jsonData = {
-          'text': pageText,
-        };
+      Map<String, dynamic> jsonData = {
+        'text': pageText,
+      };
+
+      //print(data['history'][0]['history_item_id']);
+
+      // Get History
+      var responseHist =
+          await http.get(Uri.parse(apiUrlHist), headers: headers);
+      Map<String, dynamic> data =
+          json.decode(utf8.decode(responseHist.bodyBytes));
+
+      List<dynamic> dataAll = data['history'];
+
+      for (var element in dataAll) {
+        Map<String, dynamic> every = element;
+        every.forEach((key, value) {
+          if (key == 'text' &&
+              value.toString().toUpperCase() == pageText.toUpperCase()) {
+            histId = every['history_item_id'];
+          }
+        });
+      }
+      String getAudioHist =
+          'https://api.elevenlabs.io/v1/history/$histId/audio';
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/audio.mp3');
+
+      if (histId.isEmpty) {
+        //userQuestList.add(userQuest);
 
         var response = await http.post(Uri.parse(apiUrl),
             headers: headers, body: json.encode(jsonData));
+
         final bytes = response.bodyBytes;
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/audio.mp3');
+
         await file.writeAsBytes(bytes);
         fileAnt = file;
 
@@ -159,19 +181,19 @@ class _TTSPlayerState extends State<TTSPlayer> {
           print("Erro: ${response.statusCode}");
         }
       } else {
-        if (pageTextList.contains(pageText)) {
-          // Checking if the audio has finished
-          audioPlayer.onPlayerComplete.listen((event) {
-            hasFinished = true;
-          });
+        //print('In History');
+        var getAudioFromHist =
+            await http.get(Uri.parse(getAudioHist), headers: headers);
 
-          if (hasFinished == false) {
-            audioPlayer.resume();
-            isPlaying = true;
-          } else {
-            audioPlayer.play(DeviceFileSource(fileAnt!.path));
-            isPlaying = true;
-          }
+        final bytes = getAudioFromHist.bodyBytes;
+
+        await file.writeAsBytes(bytes);
+
+        if (getAudioFromHist.statusCode == 200) {
+          audioPlayer.play(DeviceFileSource(file.path));
+          isPlaying = true;
+        } else {
+          print("Erro: ${getAudioFromHist.statusCode}");
         }
       }
     }
@@ -196,6 +218,11 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 child: TextButton(
                   onPressed: (() {
                     getText(bookInfo.getPageNumber);
+                    audioPlayer.onPlayerComplete.listen((event) {
+                      hasFinished = true;
+                      isPlaying = false;
+                      audioPlayer.release();
+                    });
                     if (isPlaying == false) {
                       playBook(text!);
                     } else {
@@ -267,52 +294,3 @@ class _TTSPlayerState extends State<TTSPlayer> {
     );
   }
 }
-
-/* TextButton(
-              onPressed: (() {}),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                fixedSize: const Size(50, 120),
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: render.PdfDocumentLoader.openFile(
-                      widget.file.path,
-                      pageNumber: 1,
-                      pageBuilder: (context, textureBuilder, pageSize) =>
-                          textureBuilder(
-                        backgroundFill: true,
-                        size: const Size(50, 120),
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: Icon(
-                      Icons.play_arrow_rounded,
-                      color: uiColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Text(
-              'Book name',
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            subtitle: const Text(
-              '02:24',
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            trailing: IconButton(
-              onPressed: (() {
-                explainPage(bookInfo.getPageNumber);
-              }),
-              color: Colors.white,
-              iconSize: 30,
-              icon: const Icon(Icons.menu_book_rounded),
-            ),*/
