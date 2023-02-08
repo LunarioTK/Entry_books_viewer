@@ -22,6 +22,21 @@ class TTSPlayer extends StatefulWidget {
 }
 
 class _TTSPlayerState extends State<TTSPlayer> {
+  late final render.PdfDocumentLoader pdfThumbnail =
+      render.PdfDocumentLoader.openFile(
+    widget.file.path,
+    pageNumber: 1,
+    pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
+      backgroundFill: true,
+      size: const Size(70, 100),
+    ),
+  );
+  bool playButtonPressed = false;
+  bool isPlaying = false;
+  bool hasFinished = false;
+  IconData iconData = Icons.play_arrow_rounded;
+  AudioPlayer audioPlayer = AudioPlayer();
+
   /*Future<List<int>> _readDocumentData(String name) async {
     final ByteData data = await rootBundle.load(name);
     return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -31,12 +46,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
   Widget build(BuildContext context) {
     String? chatResponse;
     var bookInfo = context.watch<BookInfo>();
-    List<int> pageNumbers = [];
-    AudioPlayer audioPlayer = AudioPlayer();
-    List<String> pageTextList = [];
-    File? fileAnt;
-    bool isPlaying = false;
-    bool hasFinished = false;
+
     String? text;
 
     void showResult(String? text) {
@@ -125,7 +135,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       APIKey apiKey = APIKey();
       String histId = '';
       String apiUrl =
-          "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM";
+          "https://api.elevenlabs.io/v1/text-to-speech/oBblmJ2l8wOCsMUauDcR";
       String apiUrlHist = "https://api.elevenlabs.io/v1/history";
 
       Map<String, String> headers = {
@@ -172,7 +182,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
         final bytes = response.bodyBytes;
 
         await file.writeAsBytes(bytes);
-        fileAnt = file;
 
         if (response.statusCode == 200) {
           audioPlayer.play(DeviceFileSource(file.path));
@@ -198,64 +207,90 @@ class _TTSPlayerState extends State<TTSPlayer> {
       }
     }
 
+    void changeIcon(bool isButtonPressed) {
+      setState(() {
+        if (isButtonPressed) {
+          iconData = Icons.pause;
+        } else {
+          iconData = Icons.play_arrow_rounded;
+        }
+      });
+    }
+
+    void onPressThumbnail() {
+      getText(bookInfo.getPageNumber);
+
+      // If audio has finished
+      audioPlayer.onPlayerComplete.listen((event) {
+        hasFinished = true;
+        isPlaying = false;
+        audioPlayer.release();
+        setState(() {
+          playButtonPressed = false;
+          changeIcon(playButtonPressed);
+        });
+      });
+
+      audioPlayer.getDuration();
+      if (isPlaying == false) {
+        playBook(text!);
+      } else {
+        audioPlayer.pause();
+        isPlaying = false;
+      }
+    }
+
+    // Pdf Tumbnail
+    Widget pdfTumbnail() {
+      return TextButton(
+        onPressed: (() {
+          //
+          setState(() {
+            playButtonPressed = !playButtonPressed;
+            changeIcon(playButtonPressed);
+          });
+          onPressThumbnail();
+        }),
+        style: TextButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          fixedSize: const Size(70, 75),
+        ),
+        child: Stack(
+          children: [
+            Center(
+              child: pdfThumbnail,
+            ),
+            Center(
+              child: Icon(
+                iconData,
+                size: 30,
+                color: uiColor,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    //! ---------- !\\
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: Material(
         elevation: 10,
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Container(
           width: 380,
           height: 80,
           decoration: BoxDecoration(
             color: uiColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 13, top: 5, bottom: 5),
-                child: TextButton(
-                  onPressed: (() {
-                    getText(bookInfo.getPageNumber);
-                    audioPlayer.onPlayerComplete.listen((event) {
-                      hasFinished = true;
-                      isPlaying = false;
-                      audioPlayer.release();
-                    });
-                    if (isPlaying == false) {
-                      playBook(text!);
-                    } else {
-                      audioPlayer.pause();
-                      isPlaying = false;
-                    }
-                  }),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    fixedSize: const Size(50, 80),
-                  ),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: render.PdfDocumentLoader.openFile(
-                          widget.file.path,
-                          pageNumber: 1,
-                          pageBuilder: (context, textureBuilder, pageSize) =>
-                              textureBuilder(
-                            backgroundFill: true,
-                            size: const Size(50, 120),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Icon(
-                          Icons.play_arrow_rounded,
-                          color: uiColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                padding: const EdgeInsets.only(left: 10, top: 5, bottom: 5),
+                child: pdfTumbnail(),
               ),
               const SizedBox(width: 20),
               Column(
