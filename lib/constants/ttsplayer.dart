@@ -247,10 +247,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
   void _initStreams() {
     _durationSubscription = audioPlayer.onDurationChanged.listen((duration) {
       setState(() => _duration = duration);
-      setState(() {
-        playButtonPressed = !playButtonPressed;
-        changeIcon(playButtonPressed);
-      });
     });
 
     _positionSubscription = audioPlayer.onPositionChanged.listen(
@@ -261,6 +257,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
       setState(() {
         _playerState = PlayerState.stopped;
         _position = Duration.zero;
+        playButtonPressed = !playButtonPressed;
+        changeIcon(playButtonPressed);
       });
     });
 
