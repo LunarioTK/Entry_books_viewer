@@ -21,11 +21,13 @@ class _CurrenBookState extends State<CurrenBook> {
 
   @override
   Widget build(BuildContext context) {
+    final panelHeightOpen = MediaQuery.of(context).size.height * 0.90;
     var bookInfo = context.watch<BookInfo>();
 
     //final GlobalKey<SfPdfViewerState> pdfViewerKey = GlobalKey();
     PdfViewerController controller = PdfViewerController();
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Stack(
           children: [
