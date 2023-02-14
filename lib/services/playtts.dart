@@ -3,12 +3,16 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:entry_books/services/openai_api.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
-class TtsPlayer {
+class TtsPlayer extends ChangeNotifier {
   AudioPlayer audioPlayer = AudioPlayer();
-  late File _audioFile;
+  late File _audioFile = File('');
+  Duration _position = const Duration();
+  Duration _duration = const Duration();
+  PlayerState _playerState = PlayerState.paused;
 
   // Play audio
   Future<void> playBook(String pageText) async {
@@ -87,11 +91,47 @@ class TtsPlayer {
     }
   }
 
+  // Set audio file
   set setAudioFile(File audioFile) {
     _audioFile = audioFile;
+    //notifyListeners();
   }
 
+  // Get audio file
   File get getAudioFile {
     return _audioFile;
+  }
+
+  // Set duration
+  set setDuration(Duration duration) {
+    _duration = duration;
+    //notifyListeners();
+  }
+
+  // Get duration
+  Duration? get getDuration {
+    return _duration;
+  }
+
+  // Set position
+  set setPosition(Duration position) {
+    _position = position;
+    notifyListeners();
+  }
+
+  // Get position
+  Duration? get getPosition {
+    return _position;
+  }
+
+  // Set player state
+  set setPlayerState(PlayerState playerState) {
+    _playerState = playerState;
+    notifyListeners();
+  }
+
+  // Get position
+  PlayerState get getPlayerState {
+    return _playerState;
   }
 }

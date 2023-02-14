@@ -1,9 +1,8 @@
 import 'package:entry_books/services/bookinfo.dart';
-import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart' as pdfdoc;
 import 'dart:io';
 
-class GetText extends ChangeNotifier {
+class GetText {
   //File? _file;
   String pdfText = '';
 

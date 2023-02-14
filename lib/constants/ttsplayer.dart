@@ -23,6 +23,8 @@ class TTSPlayer extends StatefulWidget {
 
 class _TTSPlayerState extends State<TTSPlayer> {
   AudioPlayer audioPlayer = AudioPlayer();
+  TtsPlayer playTts = TtsPlayer();
+
   late final render.PdfDocumentLoader pdfThumbnail =
       render.PdfDocumentLoader.openFile(
     widget.file.path,
@@ -46,6 +48,10 @@ class _TTSPlayerState extends State<TTSPlayer> {
   StreamSubscription? _playerCompleteSubscription;
   StreamSubscription? _playerStateChangeSubscription;
 
+  String get _durationText => _duration?.toString().split('.').first ?? '';
+
+  String get _positionText => _position?.toString().split('.').first ?? '';
+
   bool get _isPlaying => _playerState == PlayerState.playing;
 
   bool get _isPaused => _playerState == PlayerState.paused;
@@ -61,6 +67,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
     super.initState();
     // Use initial values from player
     _playerState = audioPlayer.state;
+    _pause();
+    //audioPlayer.seek(Duration.zero);
     audioPlayer.getDuration().then(
           (value) => setState(() {
             _duration = value;
@@ -87,7 +95,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
   @override
   Widget build(BuildContext context) {
     GetText getText = GetText();
-    TtsPlayer playTts = TtsPlayer();
+    TtsPlayer playTts = context.watch<TtsPlayer>();
     GetResponse getResponse = GetResponse();
 
     var bookInfo = context.watch<BookInfo>();
@@ -128,7 +136,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     }
 
     void onPressThumbnail() async {
-      getText.getText(bookInfo.getPageNumber, widget.file);
+      await getText.getText(bookInfo.getPageNumber, widget.file);
 
       // If audio has finished
       playTts.audioPlayer.onPlayerComplete.listen((event) {
@@ -142,12 +150,16 @@ class _TTSPlayerState extends State<TTSPlayer> {
       });
 
       playTts.audioPlayer.getDuration();
-      if (isPlaying == false) {
-        await playTts.playBook(getText.pdfText);
-        audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
+      if (_isPlaying == false) {
+        if (_duration != 0 && audioPlayer.source != null) {
+          _play();
+        } else {
+          await playTts.playBook(getText.pdfText);
+          audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
+          setState(() => _playerState = PlayerState.playing);
+        }
       } else {
-        audioPlayer.pause();
-        isPlaying = false;
+        _pause();
       }
     }
 
@@ -155,9 +167,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
     Widget pdfTumbnail() {
       return TextButton(
         onPressed: (() {
-          //
           setState(() {
-            playButtonPressed = !playButtonPressed;
+            playButtonPressed = _isPaused ? true : false;
             changeIcon(playButtonPressed);
           });
           onPressThumbnail();
@@ -209,8 +220,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       'Book name',
                       style: TextStyle(
                         color: Colors.white,
@@ -218,8 +229,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
                       ),
                     ),
                     Text(
-                      '02:24',
-                      style: TextStyle(
+                      _positionText,
+                      style: const TextStyle(
                         color: Colors.white,
                       ),
                     ),
@@ -246,19 +257,26 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
   void _initStreams() {
     _durationSubscription = audioPlayer.onDurationChanged.listen((duration) {
-      setState(() => _duration = duration);
+      setState(() {
+        _duration = duration;
+        playTts.setDuration = duration;
+      });
     });
 
     _positionSubscription = audioPlayer.onPositionChanged.listen(
-      (p) => setState(() => _position = p),
+      (p) => setState(() {
+        _position = p;
+        playTts.setPosition = p;
+      }),
     );
 
     _playerCompleteSubscription = audioPlayer.onPlayerComplete.listen((event) {
       setState(() {
         _playerState = PlayerState.stopped;
         _position = Duration.zero;
-        playButtonPressed = !playButtonPressed;
+        playButtonPressed = _isPaused ? true : false;
         changeIcon(playButtonPressed);
+        playTts.setPlayerState = PlayerState.completed;
       });
     });
 
@@ -266,7 +284,30 @@ class _TTSPlayerState extends State<TTSPlayer> {
         audioPlayer.onPlayerStateChanged.listen((state) {
       setState(() {
         _playerState = state;
+        playTts.setPlayerState = state;
       });
+    });
+  }
+
+  Future<void> _play() async {
+    final position = _position;
+    if (position != null && position.inMilliseconds > 0) {
+      await audioPlayer.seek(position);
+    }
+    await audioPlayer.resume();
+    setState(() => _playerState = PlayerState.playing);
+  }
+
+  Future<void> _pause() async {
+    await audioPlayer.pause();
+    setState(() => _playerState = PlayerState.paused);
+  }
+
+  Future<void> _stop() async {
+    await audioPlayer.stop();
+    setState(() {
+      _playerState = PlayerState.stopped;
+      _position = Duration.zero;
     });
   }
 }

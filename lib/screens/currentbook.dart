@@ -24,29 +24,44 @@ class CurrenBook extends StatefulWidget {
 class _CurrenBookState extends State<CurrenBook> {
   final panelController = PanelController();
   AudioPlayer audioPlayer = AudioPlayer();
-  TtsPlayer playTts = TtsPlayer();
+  PlayerState? _playerState;
+  //TtsPlayer playTts = TtsPlayer();
   GetText getText = GetText();
   BookInfo bookInfo = BookInfo();
 
   FocusNode myfocus = FocusNode();
 
+  bool get _isPlaying => _playerState == PlayerState.playing;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    initTts();
+    //initTts();
   }
 
-  void initTts() async {
-    await getText.getText(bookInfo.getPageNumber, widget.file);
-    await playTts.playBook('');
-    audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+  /*void initTts() async {
+    if (playTts.getAudioFile.path != '') {
+      await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+    } else {
+      await getText.getText(bookInfo.getPageNumber, widget.file);
+      await playTts.playBook('');
+      await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+    }
   }
+
+  void audioPlayerState() {
+    if (!_isPlaying) {
+      audioPlayer.pause();
+      _playerState = PlayerState.paused;
+    }
+  }*/
 
   @override
   Widget build(BuildContext context) {
     final panelHeightOpen = MediaQuery.of(context).size.height * 0.90;
     var bookInfo = context.watch<BookInfo>();
+    var playTts = context.watch<TtsPlayer>();
 
     //final GlobalKey<SfPdfViewerState> pdfViewerKey = GlobalKey();
     PdfViewerController controller = PdfViewerController();
@@ -56,11 +71,23 @@ class _CurrenBookState extends State<CurrenBook> {
         child: SlidingUpPanel(
           maxHeight: panelHeightOpen,
           //onPanelClosed: () => isPanelOpen.setPanelOpen = false,
-          onPanelOpened: () => initTts(),
+          //onPanelClosed: () => audioPlayerState(),
+          onPanelOpened: () async {
+            //audioPlayer.release();
+            if (widget.file.path != '') {
+              audioPlayer
+                  .seek(playTts.getPosition ?? const Duration(seconds: 0));
+            } else {
+              await getText.getText(bookInfo.getPageNumber, widget.file);
+              await playTts.playBook(getText.pdfText);
+              audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+            }
+          },
           collapsed: Align(
             alignment: Alignment.bottomCenter,
             child: TTSPlayer(file: widget.file),
           ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           panelBuilder: (controller) => PlayerWidget(
             player: audioPlayer,
             panelController: panelController,
@@ -102,18 +129,6 @@ class _CurrenBookState extends State<CurrenBook> {
                   ),
                 ),
               ),
-
-              /*SfPdfViewer.file(
-                widget.file,
-                scrollDirection: PdfScrollDirection.horizontal,
-                key: pdfViewerKey,
-                controller: controller,
-                canShowScrollHead: false,
-                pageLayoutMode: PdfPageLayoutMode.single,
-                onPageChanged: (details) {
-                  bookInfo.setPageNumber = details.newPageNumber;
-                },
-              ),*/
             ],
           ),
         ),

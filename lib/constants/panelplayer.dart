@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:entry_books/services/bookinfo.dart';
+import 'package:entry_books/services/gettext.dart';
 import 'package:entry_books/services/panelstate.dart';
+import 'package:entry_books/services/playtts.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +28,9 @@ class PlayerWidget extends StatefulWidget {
 
 class _PlayerWidgetState extends State<PlayerWidget> {
   final panelController = PanelController();
+  GetText getText = GetText();
+  TtsPlayer playTts = TtsPlayer();
+  BookInfo bookInfo = BookInfo();
 
   PlayerState? _playerState;
   Duration? _duration;
@@ -39,9 +45,15 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   bool get _isPaused => _playerState == PlayerState.paused;
 
-  String get _durationText => _duration?.toString().split('.').first ?? '';
+  String? get _durationText =>
+      playTts.getDuration?.toString().split('.').first ??
+      _duration.toString().split('.').first;
 
-  String get _positionText => _position?.toString().split('.').first ?? '';
+  String? get _positionText =>
+      playTts.getPosition?.toString().split('.').first ??
+      _position.toString().split('.').first;
+
+  // _position?.toString().split('.').first ??
 
   AudioPlayer get player => widget.player;
 
@@ -83,6 +95,10 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    playTts = context.watch<TtsPlayer>();
+    player.seek(playTts.getPosition!);
+    //_duration = playTts.getDuration ?? const Duration();
+    //_position = playTts.getPosition ?? const Duration();
     return ListView(
       controller: widget.controller,
       padding: EdgeInsets.zero,
@@ -126,7 +142,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          const SizedBox(height: 80),
+          const SizedBox(height: 45),
           Container(
             height: 250,
             width: 280,
@@ -163,7 +179,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                   Icons.pause,
                   color: _isPlaying ? Colors.black : Colors.grey,
                 ),
-                color: Colors.grey,
+                //color: Colors.grey,
               ),
               IconButton(
                 key: const Key('play_button'),
@@ -182,7 +198,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                   Icons.stop,
                   color: _isPlaying ? Colors.black : Colors.grey,
                 ),
-                color: Colors.grey,
+                //color: Colors.grey,
               ),
             ],
           ),
@@ -190,6 +206,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
             activeColor: Colors.green.shade800,
             onChanged: (v) {
               final duration = _duration;
+              //v = _position!.inMilliseconds.roundToDouble();
               if (duration == null) {
                 return;
               }
@@ -210,19 +227,11 @@ class _PlayerWidgetState extends State<PlayerWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _position != null
-                      ? _positionText
-                      : _duration != null
-                          ? _durationText
-                          : '',
+                  _position.toString().split('.').first,
                   style: const TextStyle(fontSize: 16.0),
                 ),
                 Text(
-                  _position != null
-                      ? _durationText
-                      : _duration != null
-                          ? _durationText
-                          : '',
+                  _duration.toString().split('.').first,
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
