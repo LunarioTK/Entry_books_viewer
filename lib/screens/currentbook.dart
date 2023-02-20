@@ -37,6 +37,14 @@ class _CurrenBookState extends State<CurrenBook> {
   void initState() {
     super.initState();
     //initTts();
+    playTts.setAudioFile = File('');
+    PlayerState.paused;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    audioPlayer.dispose();
   }
 
   /*void initTts() async {
@@ -77,19 +85,8 @@ class _CurrenBookState extends State<CurrenBook> {
         child: SlidingUpPanel(
           controller: panelController,
           maxHeight: panelHeightOpen,
-          //onPanelClosed: () => isPanelOpen.setPanelOpen = false,
-          //onPanelClosed: () => audioPlayerState(),
-          onPanelOpened: () async {
-            //audioPlayer.release();
-            if (widget.file.path != '') {
-              audioPlayer
-                  .seek(playTts.getPosition ?? const Duration(seconds: 0));
-            } else {
-              await getText.getText(bookInfo.getPageNumber, widget.file);
-              await playTts.playBook(getText.pdfText);
-              audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
-            }
-          },
+          //onPanelOpened: () => isOpenThenPlay(),
+          key: const Key('Sliding_panel'),
           collapsed: Align(
             alignment: Alignment.bottomCenter,
             child: TTSPlayer(
