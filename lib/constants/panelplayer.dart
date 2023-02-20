@@ -159,10 +159,14 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         children: <Widget>[
           const SizedBox(height: 20),
           Container(
-            height: 300,
+            height: 250,
             width: 280,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
+              /*image: const DecorationImage(
+                image: AssetImage('assetName'),
+                fit: BoxFit.cover,
+              ),*/
             ),
             child: panelThumbnail(),
           ),
