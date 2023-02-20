@@ -73,7 +73,8 @@ class _CurrenBookState extends State<CurrenBook> {
     void isOpenThenPlay() async {
       await getText.getText(bookInfo.getPageNumber, widget.file);
       await playTts.playBook(getText.pdfText);
-      audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+      await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+      playTts.setIsAudioLoaded = true;
       //audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
     }
 
@@ -85,7 +86,7 @@ class _CurrenBookState extends State<CurrenBook> {
         child: SlidingUpPanel(
           controller: panelController,
           maxHeight: panelHeightOpen,
-          //onPanelOpened: () => isOpenThenPlay(),
+          onPanelOpened: () => isOpenThenPlay(),
           key: const Key('Sliding_panel'),
           collapsed: Align(
             alignment: Alignment.bottomCenter,
@@ -96,7 +97,7 @@ class _CurrenBookState extends State<CurrenBook> {
           ),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           panelBuilder: (controller) => PlayerWidget(
-            file: widget.file,
+            isAudioLoaded: playTts.isAudioLoaded,
             player: audioPlayer,
             panelController: panelController,
             controller: controller,

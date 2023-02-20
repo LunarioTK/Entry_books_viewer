@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:entry_books/services/bookinfo.dart';
@@ -12,16 +11,16 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter/material.dart';
 
 class PlayerWidget extends StatefulWidget {
-  final File file;
+  final bool isAudioLoaded;
   final AudioPlayer player;
   final ScrollController controller;
   final PanelController panelController;
 
   const PlayerWidget(
       {super.key,
-      required this.file,
       required this.player,
       required this.controller,
+      required this.isAudioLoaded,
       required this.panelController});
 
   @override
@@ -46,24 +45,69 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   StreamSubscription? _playerStateChangeSubscription;
 
   bool get _isPlaying => _playerState == PlayerState.playing;
-
   bool get _isPaused => _playerState == PlayerState.paused;
-
-  String? get _durationText =>
-      playTts.getDuration?.toString().split('.').first ??
-      _duration.toString().split('.').first;
-
-  String? get _positionText =>
-      playTts.getPosition?.toString().split('.').first ??
-      _position.toString().split('.').first;
 
   // _position?.toString().split('.').first ??
 
   AudioPlayer get player => widget.player;
 
+  // Play button
+  Widget playButton() {
+    bool isAudioLoaded =
+        Provider.of<TtsPlayer>(context, listen: false).isAudioLoaded;
+    return IconButton(
+      key: const Key('play_button'),
+      onPressed: _isPlaying && isAudioLoaded ? null : _play,
+      iconSize: 40.0,
+      icon: Icon(
+        Icons.play_arrow,
+        color: !_isPlaying && isAudioLoaded ? Colors.black : Colors.grey,
+      ),
+      color: Colors.grey,
+    );
+  }
+
+  // Pause button
+  Widget pauseButton() {
+    bool isAudioLoaded =
+        Provider.of<TtsPlayer>(context, listen: false).isAudioLoaded;
+    return IconButton(
+      key: const Key('pause_button'),
+      onPressed: _isPlaying && isAudioLoaded ? _pause : null,
+      iconSize: 40.0,
+      icon: Icon(
+        Icons.pause,
+        color: _isPlaying ? Colors.black : Colors.grey,
+      ),
+    );
+  }
+
+  // Stop button
+  Widget stopButton() {
+    bool isAudioLoaded =
+        Provider.of<TtsPlayer>(context, listen: false).isAudioLoaded;
+
+    return IconButton(
+      key: const Key('stop_button'),
+      onPressed: _isPlaying && isAudioLoaded || _isPaused && isAudioLoaded
+          ? _stop
+          : null,
+      iconSize: 40.0,
+      icon: Icon(
+        Icons.stop,
+        color: _isPlaying ? Colors.black : Colors.grey,
+      ),
+      //color: Colors.grey,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    /*String? durationText = playTts.getDuration?.toString().split('.').first ??
+        _duration.toString().split('.').first;
+    String positionText = playTts.getPosition?.toString().split('.').first ??
+        _position.toString().split('.').first;*/
     // Use initial values from player
     _playerState = player.state;
     player.getDuration().then(
@@ -71,6 +115,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
             _duration = value;
           }),
         );
+    //widget.isAudioLoaded = true;
     player.getCurrentPosition().then(
           (value) => setState(() {
             _position = value;
@@ -139,17 +184,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     }
   }
 
-  Widget panelThumbnail() {
-    return PdfDocumentLoader.openFile(
-      widget.file.path,
-      pageNumber: 1,
-      pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
-        backgroundFill: true,
-        size: const Size(180, 250),
-      ),
-    );
-  }
-
   Widget buildPlayer() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -158,12 +192,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           const SizedBox(height: 20),
-          Container(
-            height: 250,
-            width: 280,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-            child: panelThumbnail(),
-          ),
+          const BookThumbnail(),
           const SizedBox(height: 40),
           const Text(
             'Book Name',
@@ -180,34 +209,9 @@ class _PlayerWidgetState extends State<PlayerWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                key: const Key('pause_button'),
-                onPressed: _isPlaying ? _pause : null,
-                iconSize: 40.0,
-                icon: Icon(
-                  Icons.pause,
-                  color: _isPlaying ? Colors.black : Colors.grey,
-                ),
-              ),
-              IconButton(
-                key: const Key('play_button'),
-                onPressed: _isPlaying ? null : _play,
-                iconSize: 40.0,
-                icon: const Icon(
-                  Icons.play_arrow,
-                ),
-                color: Colors.black,
-              ),
-              IconButton(
-                key: const Key('stop_button'),
-                onPressed: _isPlaying || _isPaused ? _stop : null,
-                iconSize: 40.0,
-                icon: Icon(
-                  Icons.stop,
-                  color: _isPlaying ? Colors.black : Colors.grey,
-                ),
-                //color: Colors.grey,
-              ),
+              pauseButton(),
+              playButton(),
+              stopButton(),
             ],
           ),
           Slider(
@@ -262,11 +266,15 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   void _initStreams() {
     _durationSubscription = player.onDurationChanged.listen((duration) {
-      setState(() => _duration = duration);
+      setState(() {
+        _duration = duration;
+      });
     });
 
     _positionSubscription = player.onPositionChanged.listen(
-      (p) => setState(() => _position = p),
+      (p) => setState(() {
+        _position = p;
+      }),
     );
 
     _playerCompleteSubscription = player.onPlayerComplete.listen((event) {
@@ -290,12 +298,16 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       await player.seek(position);
     }
     await player.resume();
-    setState(() => _playerState = PlayerState.playing);
+    setState(() {
+      _playerState = PlayerState.playing;
+    });
   }
 
   Future<void> _pause() async {
     await player.pause();
-    setState(() => _playerState = PlayerState.paused);
+    setState(() {
+      _playerState = PlayerState.paused;
+    });
   }
 
   Future<void> _stop() async {
@@ -304,5 +316,31 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       _playerState = PlayerState.stopped;
       _position = Duration.zero;
     });
+  }
+}
+
+// Book Thumbnail
+class BookThumbnail extends StatelessWidget {
+  const BookThumbnail({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var bookInfo = context.watch<BookInfo>();
+
+    return Container(
+      key: const Key('Thumbnail_container'),
+      height: 300,
+      width: 280,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+      child: PdfDocumentLoader.openFile(
+        bookInfo.getFile.path,
+        key: const Key('Thumbnail_panel'),
+        pageNumber: 1,
+        pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
+          backgroundFill: true,
+          size: const Size(180, 250),
+        ),
+      ),
+    );
   }
 }

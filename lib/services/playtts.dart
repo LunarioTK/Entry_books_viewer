@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 class TtsPlayer extends ChangeNotifier {
   AudioPlayer audioPlayer = AudioPlayer();
   late File _audioFile = File('');
+  bool isAudioLoaded = false;
   Duration _position = const Duration();
   Duration _duration = const Duration();
   PlayerState _playerState = PlayerState.paused;
@@ -133,5 +134,11 @@ class TtsPlayer extends ChangeNotifier {
   // Get player state
   PlayerState get getPlayerState {
     return _playerState;
+  }
+
+  // Set is audio loaded
+  set setIsAudioLoaded(bool setIsAudioLoaded) {
+    isAudioLoaded = setIsAudioLoaded;
+    //notifyListeners();
   }
 }
