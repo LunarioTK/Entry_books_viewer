@@ -103,6 +103,8 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   @override
   void initState() {
+    var getPosition =
+        Provider.of<TtsPlayer>(context, listen: false).getPosition;
     super.initState();
     /*String? durationText = playTts.getDuration?.toString().split('.').first ??
         _duration.toString().split('.').first;
