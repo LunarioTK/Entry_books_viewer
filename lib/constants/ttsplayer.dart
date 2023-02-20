@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:entry_books/constants/uicolor.dart';
+import 'package:entry_books/services/azureapi.dart';
 import 'package:entry_books/services/bookinfo.dart';
 import 'package:entry_books/services/getresponse.dart';
 import 'package:entry_books/services/gettext.dart';
@@ -10,12 +11,16 @@ import 'package:entry_books/services/panelstate.dart';
 import 'package:entry_books/services/playtts.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_render/pdf_render_widgets.dart' as render;
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:provider/provider.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class TTSPlayer extends StatefulWidget {
+  PanelController panelController = PanelController();
   File file;
-  TTSPlayer({super.key, required this.file});
+  TTSPlayer({super.key, required this.file, required this.panelController});
 
   @override
   State<TTSPlayer> createState() => _TTSPlayerState();
@@ -135,6 +140,18 @@ class _TTSPlayerState extends State<TTSPlayer> {
           });
     }
 
+    void onPressThumbnailAzure(String text) async {
+      http.Response response = await TextToSpeechApi.textToSpeech(text);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/audio.mp3');
+
+      final bytes = response.bodyBytes;
+
+      await file.writeAsBytes(bytes);
+
+      await audioPlayer.play(DeviceFileSource(file.path));
+    }
+
     void onPressThumbnail() async {
       await getText.getText(bookInfo.getPageNumber, widget.file);
 
@@ -155,6 +172,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
           _play();
         } else {
           await playTts.playBook(getText.pdfText);
+          //onPressThumbnailAzure(getText.pdfText);
           audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
           setState(() => _playerState = PlayerState.playing);
         }
@@ -202,7 +220,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         child: GestureDetector(
-          onTap: () => isPanelOpen.setPanelOpen = true,
+          onTap: () => widget.panelController.open(),
           child: Container(
             width: 380,
             height: 80,
@@ -267,6 +285,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       (p) => setState(() {
         _position = p;
         playTts.setPosition = p;
+        //print(playTts.getPosition.toString());
       }),
     );
 
