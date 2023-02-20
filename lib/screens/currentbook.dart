@@ -25,7 +25,7 @@ class _CurrenBookState extends State<CurrenBook> {
   final panelController = PanelController();
   AudioPlayer audioPlayer = AudioPlayer();
   PlayerState? _playerState;
-  //TtsPlayer playTts = TtsPlayer();
+  TtsPlayer playTts = TtsPlayer();
   GetText getText = GetText();
   BookInfo bookInfo = BookInfo();
 
@@ -35,9 +35,16 @@ class _CurrenBookState extends State<CurrenBook> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     //initTts();
+    playTts.setAudioFile = File('');
+    PlayerState.paused;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    audioPlayer.dispose();
   }
 
   /*void initTts() async {
@@ -63,32 +70,33 @@ class _CurrenBookState extends State<CurrenBook> {
     var bookInfo = context.watch<BookInfo>();
     var playTts = context.watch<TtsPlayer>();
 
+    void isOpenThenPlay() async {
+      await getText.getText(bookInfo.getPageNumber, widget.file);
+      await playTts.playBook(getText.pdfText);
+      audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+      //audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
+    }
+
     //final GlobalKey<SfPdfViewerState> pdfViewerKey = GlobalKey();
-    PdfViewerController controller = PdfViewerController();
+    PdfViewerController pdfController = PdfViewerController();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: SlidingUpPanel(
+          controller: panelController,
           maxHeight: panelHeightOpen,
-          //onPanelClosed: () => isPanelOpen.setPanelOpen = false,
-          //onPanelClosed: () => audioPlayerState(),
-          onPanelOpened: () async {
-            //audioPlayer.release();
-            if (widget.file.path != '') {
-              audioPlayer
-                  .seek(playTts.getPosition ?? const Duration(seconds: 0));
-            } else {
-              await getText.getText(bookInfo.getPageNumber, widget.file);
-              await playTts.playBook(getText.pdfText);
-              audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
-            }
-          },
+          //onPanelOpened: () => isOpenThenPlay(),
+          key: const Key('Sliding_panel'),
           collapsed: Align(
             alignment: Alignment.bottomCenter,
-            child: TTSPlayer(file: widget.file),
+            child: TTSPlayer(
+              file: widget.file,
+              panelController: panelController,
+            ),
           ),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           panelBuilder: (controller) => PlayerWidget(
+            file: widget.file,
             player: audioPlayer,
             panelController: panelController,
             controller: controller,
@@ -99,10 +107,10 @@ class _CurrenBookState extends State<CurrenBook> {
                 padding: const EdgeInsets.only(bottom: 130),
                 child: PdfViewer.openFile(
                   widget.file.path,
-                  viewerController: controller,
+                  viewerController: pdfController,
                   params: PdfViewerParams(
                     onInteractionEnd: (details) {
-                      bookInfo.setPageNumber = controller.currentPageNumber;
+                      bookInfo.setPageNumber = pdfController.currentPageNumber;
                     },
                     layoutPages: (viewSize, pages) {
                       List<Rect> rect = [];

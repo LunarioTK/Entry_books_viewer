@@ -17,29 +17,29 @@ class Book extends StatelessWidget {
       padding: const EdgeInsets.all(15.0),
       child: Column(
         children: [
-          TextButton(
-            onPressed: (() {
+          GestureDetector(
+            onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => CurrenBook(file: file),
                 ),
               );
-            }),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.all(0.0),
-              backgroundColor: Colors.transparent,
-              fixedSize: const Size(100, 150),
-              elevation: 0,
-            ),
-            child: PdfDocumentLoader.openFile(
-              file.path,
-              pageNumber: 1,
-              pageBuilder: (context, textureBuilder, pageSize) =>
-                  textureBuilder(
-                size: const Size(80, 120),
+            },
+            child: Material(
+              elevation: 10,
+              child: Container(
+                child: PdfDocumentLoader.openFile(
+                  file.path,
+                  pageNumber: 1,
+                  pageBuilder: (context, textureBuilder, pageSize) =>
+                      textureBuilder(
+                    size: const Size(80, 120),
+                  ),
+                ),
               ),
             ),
           ),
+          const SizedBox(height: 2),
           Text(
             '__________',
             style: TextStyle(
