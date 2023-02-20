@@ -1,21 +1,25 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:entry_books/services/bookinfo.dart';
 import 'package:entry_books/services/gettext.dart';
 import 'package:entry_books/services/panelstate.dart';
 import 'package:entry_books/services/playtts.dart';
+import 'package:pdf_render/pdf_render_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter/material.dart';
 
 class PlayerWidget extends StatefulWidget {
+  final File file;
   final AudioPlayer player;
   final ScrollController controller;
   final PanelController panelController;
 
   const PlayerWidget(
       {super.key,
+      required this.file,
       required this.player,
       required this.controller,
       required this.panelController});
@@ -27,7 +31,7 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _PlayerWidgetState extends State<PlayerWidget> {
-  final panelController = PanelController();
+  //final panelController = PanelController();
   GetText getText = GetText();
   TtsPlayer playTts = TtsPlayer();
   BookInfo bookInfo = BookInfo();
@@ -142,17 +146,21 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          const SizedBox(height: 45),
+          const SizedBox(height: 20),
           Container(
-            height: 250,
+            height: 320,
             width: 280,
             decoration: BoxDecoration(
-              color: Colors.green.shade800,
               borderRadius: BorderRadius.circular(10),
-              /*image: const DecorationImage(
-                image: AssetImage('assetName'),
-                fit: BoxFit.cover,
-              ),*/
+            ),
+            child: PdfDocumentLoader.openFile(
+              widget.file.path,
+              pageNumber: 1,
+              pageBuilder: (context, textureBuilder, pageSize) =>
+                  textureBuilder(
+                backgroundFill: true,
+                size: const Size(280, 320),
+              ),
             ),
           ),
           const SizedBox(height: 40),
@@ -179,7 +187,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                   Icons.pause,
                   color: _isPlaying ? Colors.black : Colors.grey,
                 ),
-                //color: Colors.grey,
               ),
               IconButton(
                 key: const Key('play_button'),
@@ -192,7 +199,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
               ),
               IconButton(
                 key: const Key('stop_button'),
-                onPressed: /*_isPlaying || _isPaused ?*/ _stop,
+                onPressed: _isPlaying || _isPaused ? _stop : null,
                 iconSize: 40.0,
                 icon: Icon(
                   Icons.stop,

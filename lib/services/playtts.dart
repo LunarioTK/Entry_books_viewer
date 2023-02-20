@@ -127,10 +127,10 @@ class TtsPlayer extends ChangeNotifier {
   // Set player state
   set setPlayerState(PlayerState playerState) {
     _playerState = playerState;
-    notifyListeners();
+    //notifyListeners();
   }
 
-  // Get position
+  // Get player state
   PlayerState get getPlayerState {
     return _playerState;
   }
