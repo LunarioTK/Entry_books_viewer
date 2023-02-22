@@ -25,8 +25,8 @@ class _CurrenBookState extends State<CurrenBook> {
   final panelController = PanelController();
   AudioPlayer audioPlayer = AudioPlayer();
   PlayerState? _playerState;
-  TtsPlayer playTts = TtsPlayer();
   GetText getText = GetText();
+  TtsPlayer playTts = TtsPlayer();
   BookInfo bookInfo = BookInfo();
 
   FocusNode myfocus = FocusNode();
@@ -44,25 +44,9 @@ class _CurrenBookState extends State<CurrenBook> {
   @override
   void dispose() {
     super.dispose();
+    //playTts.setIsAudioLoaded = false;
     audioPlayer.dispose();
   }
-
-  /*void initTts() async {
-    if (playTts.getAudioFile.path != '') {
-      await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
-    } else {
-      await getText.getText(bookInfo.getPageNumber, widget.file);
-      await playTts.playBook('');
-      await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
-    }
-  }
-
-  void audioPlayerState() {
-    if (!_isPlaying) {
-      audioPlayer.pause();
-      _playerState = PlayerState.paused;
-    }
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -70,15 +54,17 @@ class _CurrenBookState extends State<CurrenBook> {
     var bookInfo = context.watch<BookInfo>();
     var playTts = context.watch<TtsPlayer>();
 
+    // Sets audio loaded to false when current book closed
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      playTts.setIsAudioLoaded = false;
+    });
+
     void isOpenThenPlay() async {
       try {
         await getText.getText(bookInfo.getPageNumber, widget.file);
         await playTts.playBook(getText.pdfText);
         audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
         playTts.setIsAudioLoaded = true;
-        /*setState(() {
-          Duration? position = playTts.getPosition;
-        });*/
       } catch (e) {
         print("Couldn't play audiobook");
       }
@@ -94,6 +80,7 @@ class _CurrenBookState extends State<CurrenBook> {
         child: SlidingUpPanel(
           controller: panelController,
           maxHeight: panelHeightOpen,
+          onPanelClosed: () => playTts.setIsAudioLoaded = false,
           onPanelOpened: () => isOpenThenPlay(),
           key: const Key('Sliding_panel'),
           collapsed: Align(
