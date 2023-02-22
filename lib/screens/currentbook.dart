@@ -55,6 +55,7 @@ class _CurrenBookState extends State<CurrenBook> {
     var playTts = context.watch<TtsPlayer>();
 
     // Sets audio loaded to false when current book closed
+    // This is called on dispose
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       playTts.setIsAudioLoaded = false;
     });
@@ -68,8 +69,6 @@ class _CurrenBookState extends State<CurrenBook> {
       } catch (e) {
         print("Couldn't play audiobook");
       }
-
-      //audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
     }
 
     //final GlobalKey<SfPdfViewerState> pdfViewerKey = GlobalKey();
