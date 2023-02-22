@@ -61,6 +61,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
   bool get _isPaused => _playerState == PlayerState.paused;
 
+  PanelController get panelController => widget.panelController;
+
   /*Future<List<int>> _readDocumentData(String name) async {
     final ByteData data = await rootBundle.load(name);
     return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -85,6 +87,24 @@ class _TTSPlayerState extends State<TTSPlayer> {
           }),
         );
     _initStreams();
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    // Subscriptions only can be closed asynchronously,
+    // therefore events can occur after widget has been disposed.
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
+  void dispose() {
+    _durationSubscription?.cancel();
+    _positionSubscription?.cancel();
+    _playerCompleteSubscription?.cancel();
+    _playerStateChangeSubscription?.cancel();
+    super.dispose();
   }
 
   void changeIcon(bool isButtonPressed) {
@@ -285,7 +305,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
       (p) => setState(() {
         _position = p;
         playTts.setPosition = p;
-        //print(playTts.getPosition.toString());
       }),
     );
 
@@ -314,6 +333,9 @@ class _TTSPlayerState extends State<TTSPlayer> {
       await audioPlayer.seek(position);
     }
     await audioPlayer.resume();
+    panelController.open();
+    panelController.hide;
+    panelController.close;
     setState(() => _playerState = PlayerState.playing);
   }
 

@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:entry_books/services/bookinfo.dart';
-import 'package:entry_books/services/gettext.dart';
-import 'package:entry_books/services/panelstate.dart';
 import 'package:entry_books/services/playtts.dart';
 import 'package:pdf_render/pdf_render_widgets.dart';
 import 'package:provider/provider.dart';
@@ -11,8 +9,8 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:flutter/material.dart';
 
 class PlayerWidget extends StatefulWidget {
-  final bool isAudioLoaded;
   final AudioPlayer player;
+  final bool isAudioLoaded;
   final ScrollController controller;
   final PanelController panelController;
 
@@ -31,9 +29,6 @@ class PlayerWidget extends StatefulWidget {
 
 class _PlayerWidgetState extends State<PlayerWidget> {
   //final panelController = PanelController();
-  GetText getText = GetText();
-  TtsPlayer playTts = TtsPlayer();
-  BookInfo bookInfo = BookInfo();
 
   PlayerState? _playerState;
   Duration? _duration;
@@ -45,9 +40,12 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   StreamSubscription? _playerStateChangeSubscription;
 
   bool get _isPlaying => _playerState == PlayerState.playing;
+
   bool get _isPaused => _playerState == PlayerState.paused;
 
-  // _position?.toString().split('.').first ??
+  String get _durationText => _duration?.toString().split('.').first ?? '';
+
+  String get _positionText => _position?.toString().split('.').first ?? '';
 
   AudioPlayer get player => widget.player;
 
@@ -95,7 +93,9 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       iconSize: 40.0,
       icon: Icon(
         Icons.stop,
-        color: _isPlaying ? Colors.black : Colors.grey,
+        color: _isPlaying && isAudioLoaded || _isPaused && isAudioLoaded
+            ? Colors.black
+            : Colors.grey,
       ),
       //color: Colors.grey,
     );
@@ -103,13 +103,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   @override
   void initState() {
-    var getPosition =
-        Provider.of<TtsPlayer>(context, listen: false).getPosition;
     super.initState();
-    /*String? durationText = playTts.getDuration?.toString().split('.').first ??
-        _duration.toString().split('.').first;
-    String positionText = playTts.getPosition?.toString().split('.').first ??
-        _position.toString().split('.').first;*/
     // Use initial values from player
     _playerState = player.state;
     player.getDuration().then(
@@ -117,7 +111,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
             _duration = value;
           }),
         );
-    //widget.isAudioLoaded = true;
     player.getCurrentPosition().then(
           (value) => setState(() {
             _position = value;
@@ -146,10 +139,9 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    playTts = context.watch<TtsPlayer>();
-    player.seek(playTts.getPosition!);
-    //_duration = playTts.getDuration ?? const Duration();
-    //_position = playTts.getPosition ?? const Duration();
+    Duration? getPosition =
+        Provider.of<TtsPlayer>(context, listen: true).getPosition;
+    _position = getPosition;
     return ListView(
       controller: widget.controller,
       padding: EdgeInsets.zero,
@@ -157,7 +149,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       children: <Widget>[
         const SizedBox(height: 12),
         buildHandle(),
-        const SizedBox(height: 30),
         buildPlayer(),
       ],
     );
@@ -178,12 +169,11 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       );
 
   void togglePanel(BuildContext context) {
-    var isPanelOpen = Provider.of<MyPanelState>(context, listen: false);
+    //var isPanelOpen = Provider.of<APIKey>(context, listen: false);
 
-    if (widget.panelController.isPanelOpen) {
-      widget.panelController.close();
-      isPanelOpen.setPanelOpen = false;
-    }
+    widget.panelController.isPanelOpen
+        ? widget.panelController.close()
+        : widget.panelController.open();
   }
 
   Widget buildPlayer() {
@@ -193,7 +183,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          const SizedBox(height: 20),
+          const SizedBox(height: 50),
           const BookThumbnail(),
           const SizedBox(height: 40),
           const Text(
@@ -220,7 +210,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
             activeColor: Colors.green.shade800,
             onChanged: (v) {
               final duration = _duration;
-              //v = _position!.inMilliseconds.roundToDouble();
               if (duration == null) {
                 return;
               }
@@ -241,11 +230,19 @@ class _PlayerWidgetState extends State<PlayerWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _position.toString().split('.').first,
+                  _position != null
+                      ? _positionText
+                      : _duration != null
+                          ? _durationText
+                          : '',
                   style: const TextStyle(fontSize: 16.0),
                 ),
                 Text(
-                  _duration.toString().split('.').first,
+                  _position != null
+                      ? _durationText
+                      : _duration != null
+                          ? _durationText
+                          : '',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -268,15 +265,11 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   void _initStreams() {
     _durationSubscription = player.onDurationChanged.listen((duration) {
-      setState(() {
-        _duration = duration;
-      });
+      setState(() => _duration = duration);
     });
 
     _positionSubscription = player.onPositionChanged.listen(
-      (p) => setState(() {
-        _position = p;
-      }),
+      (p) => setState(() => _position = p),
     );
 
     _playerCompleteSubscription = player.onPlayerComplete.listen((event) {
@@ -300,16 +293,12 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       await player.seek(position);
     }
     await player.resume();
-    setState(() {
-      _playerState = PlayerState.playing;
-    });
+    setState(() => _playerState = PlayerState.playing);
   }
 
   Future<void> _pause() async {
     await player.pause();
-    setState(() {
-      _playerState = PlayerState.paused;
-    });
+    setState(() => _playerState = PlayerState.paused);
   }
 
   Future<void> _stop() async {
