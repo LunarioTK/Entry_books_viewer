@@ -70,7 +70,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // Use initial values from player
     _playerState = audioPlayer.state;
@@ -240,7 +239,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
     //! ---------- !\\
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Material(
         elevation: 10,
         color: uiColor,
@@ -266,12 +265,14 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
+                  letterSpacing: 1.0,
                 ),
               ),
               subtitle: Text(
                 _positionText,
                 style: const TextStyle(
                   color: Colors.white,
+                  fontSize: 12,
                 ),
               ),
               trailing: IconButton(

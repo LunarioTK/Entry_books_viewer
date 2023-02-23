@@ -169,7 +169,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   // Trace
   Widget buildHandle() => GestureDetector(
-        onTap: (() => togglePanel(context)),
+        onTap: (() => togglePanel()),
         child: Center(
           child: Container(
               width: 40,
@@ -181,7 +181,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         ),
       );
 
-  void togglePanel(BuildContext context) {
+  void togglePanel() {
     panelController.isPanelOpen
         ? panelController.close()
         : panelController.open();
@@ -190,7 +190,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   Widget buildPlayer(double heightSize) {
     return Padding(
       padding:
-          EdgeInsets.only(top: heightSize * 0.05, bottom: heightSize * 0.05),
+          EdgeInsets.only(top: heightSize * 0.10, bottom: heightSize * 0.05),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -220,7 +220,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
           Padding(
             padding: heightSize <= 600
                 ? const EdgeInsets.only(left: 40, right: 40)
-                : const EdgeInsets.all(30.0),
+                : const EdgeInsets.only(left: 50, right: 50, top: 30),
             child: ProgressBar(
               total: _duration ?? Duration.zero,
               baseBarColor: Colors.grey,
@@ -367,10 +367,11 @@ class BookThumbnail extends StatelessWidget {
 
     return Container(
       key: const Key('Thumbnail_container'),
-      height: panelHeight <= 600 ? 160 : 360,
-      width: panelHeight <= 600 ? 240 : 350,
+      height: panelHeight <= 600 ? 160 : 300,
+      width: panelHeight <= 600 ? 240 : 300,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.blue,
       ),
       child: PdfDocumentLoader.openFile(
         bookInfo.getFile.path,
@@ -378,8 +379,8 @@ class BookThumbnail extends StatelessWidget {
         pageNumber: 1,
         pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
           size: Size(
-            panelHeight <= 600 ? 150 : 350,
-            panelHeight <= 600 ? 160 : 310,
+            panelHeight <= 600 ? 240 : 300, // width
+            panelHeight <= 600 ? 160 : 300, // heigth
           ),
         ),
       ),
