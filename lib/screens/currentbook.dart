@@ -45,7 +45,7 @@ class _CurrenBookState extends State<CurrenBook> {
   void dispose() {
     super.dispose();
     //playTts.setIsAudioLoaded = false;
-    audioPlayer.dispose();
+    audioPlayer.release();
   }
 
   @override
