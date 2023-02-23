@@ -32,6 +32,9 @@ migrate_working_dir/
 /build/
 lib/services/*
 pubspec.yaml
+pubspec.lock
+analysis_options.yaml
+.metadata
 
 # Symbolication related
 app.*.symbols
