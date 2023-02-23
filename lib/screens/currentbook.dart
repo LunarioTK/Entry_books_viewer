@@ -51,6 +51,9 @@ class _CurrenBookState extends State<CurrenBook> {
   @override
   Widget build(BuildContext context) {
     final panelHeightOpen = MediaQuery.of(context).size.height * 0.90;
+    MediaQueryData media = MediaQuery.of(context);
+    double height = media.size.height;
+    double width = media.size.width;
     var bookInfo = context.watch<BookInfo>();
     var playTts = context.watch<TtsPlayer>();
 
@@ -64,7 +67,7 @@ class _CurrenBookState extends State<CurrenBook> {
       try {
         await getText.getText(bookInfo.getPageNumber, widget.file);
         await playTts.playBook(getText.pdfText);
-        audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+        await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
         playTts.setIsAudioLoaded = true;
       } catch (e) {
         print("Couldn't play audiobook");
@@ -84,9 +87,12 @@ class _CurrenBookState extends State<CurrenBook> {
           key: const Key('Sliding_panel'),
           collapsed: Align(
             alignment: Alignment.bottomCenter,
-            child: TTSPlayer(
-              file: widget.file,
-              panelController: panelController,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TTSPlayer(
+                file: widget.file,
+                panelController: panelController,
+              ),
             ),
           ),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),

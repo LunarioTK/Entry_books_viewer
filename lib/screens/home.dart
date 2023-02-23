@@ -37,10 +37,9 @@ class _HomeState extends State<Home> {
                 ? Container()
                 : GridView.builder(
                     clipBehavior: Clip.none,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
-                      childAspectRatio: 2 / 3,
+                      childAspectRatio: height <= 600 ? 1 / 3 : 2 / 3,
                     ),
                     itemCount: bookInfo.allBooks.length,
                     itemBuilder: (BuildContext context, int index) {
