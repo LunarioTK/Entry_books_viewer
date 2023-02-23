@@ -300,7 +300,9 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         }
       });
     });
-    player.onDurationChanged.listen((Duration duration) {
+
+    _durationSubscription =
+        player.onDurationChanged.listen((Duration duration) {
       setState(() {
         _duration = duration;
         if (_position != null) {
