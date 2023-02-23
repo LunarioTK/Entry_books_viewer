@@ -122,6 +122,9 @@ class _TTSPlayerState extends State<TTSPlayer> {
     GetText getText = GetText();
     TtsPlayer playTts = context.watch<TtsPlayer>();
     GetResponse getResponse = GetResponse();
+    MediaQueryData media = MediaQuery.of(context);
+    double height = media.size.height;
+    double width = media.size.width;
 
     var bookInfo = context.watch<BookInfo>();
     var isPanelOpen = Provider.of<MyPanelState>(context, listen: false);
@@ -203,31 +206,34 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
     // Pdf Tumbnail
     Widget pdfTumbnail() {
-      return TextButton(
-        onPressed: (() {
+      return GestureDetector(
+        onTap: () {
           setState(() {
             playButtonPressed = _isPaused ? true : false;
             changeIcon(playButtonPressed);
           });
           onPressThumbnail();
-        }),
-        style: TextButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          fixedSize: const Size(70, 75),
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: pdfThumbnail,
-            ),
-            Center(
-              child: Icon(
-                iconData,
-                size: 30,
-                color: uiColor,
+        },
+        child: Container(
+          height: 70,
+          width: 60,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: pdfThumbnail,
               ),
-            ),
-          ],
+              Center(
+                child: Icon(
+                  iconData,
+                  size: 30,
+                  color: uiColor,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -237,55 +243,47 @@ class _TTSPlayerState extends State<TTSPlayer> {
       padding: const EdgeInsets.only(bottom: 15),
       child: Material(
         elevation: 10,
-        color: Colors.white,
+        color: uiColor,
         borderRadius: BorderRadius.circular(10),
         child: GestureDetector(
           onTap: () => widget.panelController.open(),
           child: Container(
-            width: 380,
-            height: 80,
+            width: width,
+            height: height * 0.15,
             decoration: BoxDecoration(
               color: uiColor,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, top: 5, bottom: 5),
-                  child: pdfTumbnail(),
-                ),
-                const SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    const Text(
-                      'Book name',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
-                    ),
-                    Text(
-                      _positionText,
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 130),
-                IconButton(
-                  onPressed: (() async {
-                    getText.getText(bookInfo.getPageNumber, widget.file);
-                    await getResponse.getResponse(getText.pdfText);
-                    showResult(getResponse.chatResponse);
-                  }),
+            child: ListTile(
+              leading: Padding(
+                padding: height <= 600
+                    ? const EdgeInsets.only(bottom: 5)
+                    : const EdgeInsets.only(),
+                child: pdfTumbnail(),
+              ),
+              title: const Text(
+                'Book name',
+                style: TextStyle(
                   color: Colors.white,
-                  iconSize: 30,
-                  icon: const Icon(Icons.menu_book_rounded),
+                  fontSize: 18,
                 ),
-              ],
+              ),
+              subtitle: Text(
+                _positionText,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              trailing: IconButton(
+                onPressed: (() async {
+                  getText.getText(bookInfo.getPageNumber, widget.file);
+                  await getResponse.getResponse(getText.pdfText);
+                  showResult(getResponse.chatResponse);
+                }),
+                color: Colors.white,
+                iconSize: 30,
+                icon: const Icon(Icons.menu_book_rounded),
+              ),
             ),
           ),
         ),
@@ -333,9 +331,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
       await audioPlayer.seek(position);
     }
     await audioPlayer.resume();
-    panelController.open();
-    panelController.hide;
-    panelController.close;
     setState(() => _playerState = PlayerState.playing);
   }
 

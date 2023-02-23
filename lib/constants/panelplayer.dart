@@ -6,6 +6,9 @@ import 'package:entry_books/services/playtts.dart';
 import 'package:pdf_render/pdf_render_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+
+import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
 
 class PlayerWidget extends StatefulWidget {
@@ -28,7 +31,9 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _PlayerWidgetState extends State<PlayerWidget> {
-  final panelController = PanelController();
+  final debouncer = PublishSubject<double>();
+  final double _value = 0.0;
+  double _sliderValue = 0.0;
 
   PlayerState? _playerState;
   Duration? _duration;
@@ -48,21 +53,31 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   String get _positionText => _position?.toString().split('.').first ?? '';
 
   AudioPlayer get player => widget.player;
+  PanelController get panelController => widget.panelController;
 
   // Play button
   Widget playButton() {
     bool isAudioLoaded =
         Provider.of<TtsPlayer>(context, listen: false).isAudioLoaded;
-    return IconButton(
-      key: const Key('play_button'),
-      onPressed: _isPlaying && isAudioLoaded ? null : _play,
-      iconSize: 40.0,
-      icon: Icon(
-        Icons.play_arrow,
-        color: !_isPlaying && isAudioLoaded ? Colors.black : Colors.grey,
-      ),
-      color: Colors.grey,
-    );
+    return isAudioLoaded == false
+        ? Container(
+            margin: const EdgeInsets.all(10.0),
+            width: 25.0,
+            height: 25.0,
+            child: const CircularProgressIndicator(
+              color: Colors.grey,
+            ),
+          )
+        : IconButton(
+            key: const Key('play_button'),
+            onPressed: _isPlaying && isAudioLoaded ? null : _play,
+            iconSize: 40.0,
+            icon: Icon(
+              Icons.play_arrow,
+              color: !_isPlaying && isAudioLoaded ? Colors.black : Colors.grey,
+            ),
+            color: Colors.grey,
+          );
   }
 
   // Pause button
@@ -106,7 +121,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     super.initState();
     // Use initial values from player
     _playerState = player.state;
-    player.getDuration().then(
+    /*player.getDuration().then(
           (value) => setState(() {
             _duration = value;
           }),
@@ -115,7 +130,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
           (value) => setState(() {
             _position = value;
           }),
-        );
+        );*/
     _initStreams();
   }
 
@@ -139,6 +154,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final panelHeight = MediaQuery.of(context).size.height;
     return ListView(
       controller: widget.controller,
       padding: EdgeInsets.zero,
@@ -146,7 +162,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       children: <Widget>[
         const SizedBox(height: 12),
         buildHandle(),
-        buildPlayer(),
+        buildPlayer(panelHeight),
       ],
     );
   }
@@ -157,7 +173,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         child: Center(
           child: Container(
               width: 40,
-              height: 6,
+              height: 7,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: const BorderRadius.all(Radius.circular(12)),
@@ -166,23 +182,21 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       );
 
   void togglePanel(BuildContext context) {
-    //var isPanelOpen = Provider.of<APIKey>(context, listen: false);
-
-    widget.panelController.isPanelOpen
-        ? widget.panelController.close()
-        : widget.panelController.open();
+    panelController.isPanelOpen
+        ? panelController.close()
+        : panelController.open();
   }
 
-  Widget buildPlayer() {
+  Widget buildPlayer(double heightSize) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding:
+          EdgeInsets.only(top: heightSize * 0.05, bottom: heightSize * 0.05),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          const SizedBox(height: 60),
           const BookThumbnail(),
-          const SizedBox(height: 40),
+          SizedBox(height: heightSize <= 600 ? 10 : 30),
           const Text(
             'Book Name',
             style: TextStyle(
@@ -193,7 +207,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
           ),
           const SizedBox(height: 10),
           const Text('Author Name'),
-          const SizedBox(height: 30),
+          SizedBox(height: heightSize <= 600 ? 10 : 30),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.min,
@@ -203,25 +217,39 @@ class _PlayerWidgetState extends State<PlayerWidget> {
               stopButton(),
             ],
           ),
-          Slider(
-            activeColor: Colors.green.shade800,
-            onChanged: (v) {
-              final duration = _duration;
-              if (duration == null) {
-                return;
-              }
-              final position = v * duration.inMilliseconds;
-              player.seek(Duration(milliseconds: position.round()));
-            },
-            value: (_position != null &&
-                    _duration != null &&
-                    _position!.inMilliseconds > 0 &&
-                    _position!.inMilliseconds < _duration!.inMilliseconds)
-                ? _position!.inMilliseconds / _duration!.inMilliseconds
-                : 0.0,
+          Padding(
+            padding: heightSize <= 600
+                ? const EdgeInsets.only(left: 40, right: 40)
+                : const EdgeInsets.all(30.0),
+            child: ProgressBar(
+              total: _duration ?? Duration.zero,
+              baseBarColor: Colors.grey,
+              thumbColor: Colors.black,
+              progressBarColor: Colors.black,
+              onSeek: (time) {
+                player
+                    .seek(Duration(milliseconds: time.inMilliseconds.round()));
+              },
+              progress: Duration(
+                milliseconds: (_position != null &&
+                        _duration != null &&
+                        _position!.inMilliseconds > 0 &&
+                        _position!.inMilliseconds < _duration!.inMilliseconds)
+                    ? _position!.inMilliseconds
+                    : 0,
+              ),
+            ),
           ),
 
-          Padding(
+          /*Slider(
+            activeColor: Colors.green.shade800,
+            onChanged: (v) {
+              debouncer.add(v);
+            },
+            value: _sliderValue,
+          ),*/
+
+          /*Padding(
             padding: const EdgeInsets.all(10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -244,30 +272,51 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                 ),
               ],
             ),
-          ),
-
-          /*Text(
-            _position != null
-                ? '$_positionText / $_durationText'
-                : _duration != null
-                    ? _durationText
-                    : '',
-            style: const TextStyle(fontSize: 16.0),
           ),*/
-          //Text('State: ${_playerState ?? '-'}'),
         ],
       ),
     );
   }
 
+  /*_PlayerWidgetState() {
+    debouncer.stream
+        .debounceTime(const Duration(milliseconds: 500))
+        .listen((value) {
+      if (_duration != null) {
+        final position = _duration! * value;
+        player.seek(position);
+      }
+    });
+  }*/
+
   void _initStreams() {
-    _durationSubscription = player.onDurationChanged.listen((duration) {
+    _positionSubscription =
+        player.onPositionChanged.listen((Duration position) {
+      setState(() {
+        _position = position;
+        if (_duration != null) {
+          _sliderValue = (_position!.inMilliseconds / _duration!.inMilliseconds)
+              .clamp(0.0, 1.0);
+        }
+      });
+    });
+    player.onDurationChanged.listen((Duration duration) {
+      setState(() {
+        _duration = duration;
+        if (_position != null) {
+          _sliderValue = (_position!.inMilliseconds / _duration!.inMilliseconds)
+              .clamp(0.0, 1.0);
+        }
+      });
+    });
+
+    /*_durationSubscription = player.onDurationChanged.listen((duration) {
       setState(() => _duration = duration);
     });
 
     _positionSubscription = player.onPositionChanged.listen(
       (p) => setState(() => _position = p),
-    );
+    );*/
 
     _playerCompleteSubscription = player.onPlayerComplete.listen((event) {
       setState(() {
@@ -314,19 +363,24 @@ class BookThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var bookInfo = context.watch<BookInfo>();
+    final panelHeight = MediaQuery.of(context).size.height;
 
     return Container(
       key: const Key('Thumbnail_container'),
-      height: 300,
-      width: 280,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+      height: panelHeight <= 600 ? 160 : 360,
+      width: panelHeight <= 600 ? 240 : 350,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: PdfDocumentLoader.openFile(
         bookInfo.getFile.path,
         key: const Key('Thumbnail_panel'),
         pageNumber: 1,
         pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
-          backgroundFill: true,
-          size: const Size(180, 250),
+          size: Size(
+            panelHeight <= 600 ? 150 : 350,
+            panelHeight <= 600 ? 160 : 310,
+          ),
         ),
       ),
     );
