@@ -28,7 +28,7 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _PlayerWidgetState extends State<PlayerWidget> {
-  //final panelController = PanelController();
+  final panelController = PanelController();
 
   PlayerState? _playerState;
   Duration? _duration;
@@ -139,9 +139,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    Duration? getPosition =
-        Provider.of<TtsPlayer>(context, listen: true).getPosition;
-    _position = getPosition;
     return ListView(
       controller: widget.controller,
       padding: EdgeInsets.zero,
@@ -183,7 +180,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          const SizedBox(height: 50),
+          const SizedBox(height: 60),
           const BookThumbnail(),
           const SizedBox(height: 40),
           const Text(
