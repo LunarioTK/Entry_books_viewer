@@ -32,7 +32,7 @@ class PlayerWidget extends StatefulWidget {
 
 class _PlayerWidgetState extends State<PlayerWidget> {
   final debouncer = PublishSubject<double>();
-  final double _value = 0.0;
+  //final double _value = 0.0;
   double _sliderValue = 0.0;
 
   PlayerState? _playerState;
@@ -48,9 +48,9 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   bool get _isPaused => _playerState == PlayerState.paused;
 
-  String get _durationText => _duration?.toString().split('.').first ?? '';
+  //String get _durationText => _duration?.toString().split('.').first ?? '';
 
-  String get _positionText => _position?.toString().split('.').first ?? '';
+  //String get _positionText => _position?.toString().split('.').first ?? '';
 
   AudioPlayer get player => widget.player;
   PanelController get panelController => widget.panelController;
@@ -189,8 +189,9 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   Widget buildPlayer(double heightSize) {
     return Padding(
-      padding:
-          EdgeInsets.only(top: heightSize * 0.10, bottom: heightSize * 0.05),
+      padding: EdgeInsets.only(
+          top: heightSize < 780 ? heightSize * 0.05 : heightSize * 0.10,
+          bottom: heightSize * 0.05),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -369,7 +370,7 @@ class BookThumbnail extends StatelessWidget {
 
     return Container(
       key: const Key('Thumbnail_container'),
-      height: panelHeight <= 600 ? 160 : 300,
+      height: panelHeight <= 600 ? 160 : 340,
       width: panelHeight <= 600 ? 240 : 300,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -382,7 +383,7 @@ class BookThumbnail extends StatelessWidget {
         pageBuilder: (context, textureBuilder, pageSize) => textureBuilder(
           size: Size(
             panelHeight <= 600 ? 240 : 300, // width
-            panelHeight <= 600 ? 160 : 300, // heigth
+            panelHeight <= 600 ? 160 : 315, // heigth
           ),
         ),
       ),
