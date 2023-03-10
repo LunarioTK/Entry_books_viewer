@@ -144,7 +144,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
     //String? text
 
-    // Get position
+    // Current position
     _positionSubscription = audioPlayer.onPositionChanged.listen(
       (p) => setState(() {
         _position = p;
@@ -232,7 +232,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
           _play();
         } else {
           await playTts.playBook(getText.pdfText);
-          //onPressThumbnailAzure(getText.pdfText);
           audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
           setState(() => _playerState = PlayerState.playing);
         }
@@ -246,7 +245,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
       return GestureDetector(
         onTap: () {
           setState(() {
-            playButtonPressed = _isPaused ? true : false;
+            playButtonPressed =
+                audioPlayer.state == PlayerState.paused ? true : false;
             changeIcon(playButtonPressed);
           });
           onPressThumbnail();

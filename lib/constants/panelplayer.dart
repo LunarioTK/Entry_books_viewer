@@ -112,7 +112,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
             ? Colors.black
             : Colors.grey,
       ),
-      //color: Colors.grey,
     );
   }
 
@@ -131,19 +130,9 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   @override
   void initState() {
     super.initState();
-    //playAudioIfOpen();
+
     // Use initial values from player
     _playerState = player.state;
-    /*player.getDuration().then(
-          (value) => setState(() {
-            _duration = value;
-          }),
-        );
-    player.getCurrentPosition().then(
-          (value) => setState(() {
-            _position = value;
-          }),
-        );*/
     _initStreams();
   }
 
@@ -206,15 +195,15 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         return Padding(
           padding: EdgeInsets.only(
               top: (heightSize < 780 && heightSize >= 600)
-                  ? heightSize * 0.02
-                  : heightSize * 0.05,
+                  ? heightSize * 0.05
+                  : heightSize * 0.07,
               bottom: heightSize * 0.05),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               const BookThumbnail(),
-              SizedBox(height: heightSize <= 600 ? 10 : 30),
+              SizedBox(height: heightSize <= 600 ? 10 : 20),
               const Text(
                 'Book Name',
                 style: TextStyle(
@@ -225,7 +214,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
               ),
               const SizedBox(height: 10),
               const Text('Author Name'),
-              SizedBox(height: heightSize <= 600 ? 10 : 30),
+              SizedBox(height: heightSize <= 600 ? 10 : 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 mainAxisSize: MainAxisSize.min,
@@ -238,7 +227,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
               Padding(
                 padding: heightSize <= 600
                     ? const EdgeInsets.only(left: 40, right: 40)
-                    : const EdgeInsets.only(left: 50, right: 50, top: 30),
+                    : const EdgeInsets.only(left: 50, right: 50, top: 20),
                 child: ProgressBar(
                   total: _duration ?? Duration.zero,
                   baseBarColor: Colors.grey,

@@ -72,7 +72,11 @@ class _CurrenBookState extends State<CurrenBook> {
         await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);*/
         audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
         if (audioPlayer.source.toString() != '') {
-          audioPlayer.seek(playTts.getPosition!);
+          if (audioPlayer.state == PlayerState.playing) {
+            audioPlayer.resume();
+          } else {
+            audioPlayer.seek(playTts.getPosition!);
+          }
         } else {
           await getText.getText(bookInfo.getPageNumber, widget.file);
           await playTts.playBook(getText.pdfText);
