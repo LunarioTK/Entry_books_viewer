@@ -140,10 +140,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
     var bookInfo = context.watch<BookInfo>();
     var isPanelOpen = Provider.of<MyPanelState>(context, listen: false);
 
-    //Duration getPosition = playTts.getPosition!;
-
-    //String? text
-
     // Current position
     _positionSubscription = audioPlayer.onPositionChanged.listen(
       (p) => setState(() {
@@ -227,6 +223,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       });
 
       playTts.audioPlayer.getDuration();
+
       if (_isPlaying == false) {
         if (audioPlayer.source != null) {
           _play();
@@ -240,39 +237,103 @@ class _TTSPlayerState extends State<TTSPlayer> {
       }
     }
 
-    // Pdf Tumbnail
-    Widget pdfTumbnail() {
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            playButtonPressed =
-                audioPlayer.state == PlayerState.paused ? true : false;
-            changeIcon(playButtonPressed);
-          });
-          onPressThumbnail();
+    /*try {
+      StreamBuilder(
+        stream: bookInfo.getPagesStream.stream,
+        builder: (context, snapshot) {
+          List<int> pages = [];
+
+          if (snapshot.hasData) {
+            pages.add(snapshot.data!);
+            if (pages.last != (pages[pages.length - 1])) {
+              setState(() {
+                return changeIcon(false);
+              });
+            }
+          }
         },
-        child: Container(
-          height: 70,
-          width: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Stack(
-            children: [
-              Center(
-                child: pdfThumbnail,
-              ),
-              Center(
-                child: Icon(
-                  iconData,
-                  size: 25,
-                  color: uiColor,
+      );
+
+      bookInfo.getPagesStream.stream.listen((data) async {
+        List<int> pages = [];
+        pages.add(data);
+
+        if (pages.last != (pages[pages.length - 1])) {
+          setState(() {
+            changeIcon(false);
+          });
+        }
+      });
+    } on Exception {
+      bookInfo.getPagesStream.close();
+    }*/
+
+    // Pdf Tumbnail
+    // Added a Stream so i can listen for changes on the stream
+    List<int> pages = [];
+    Widget pdfTumbnail() {
+      return StreamBuilder(
+          stream: bookInfo.getPagesStream.stream,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              pages.add(snapshot.data!);
+
+              if (pages.length > 2) {
+                int lastPage = pages.last;
+                pages.clear();
+                pages.add(lastPage);
+              }
+              print(audioPlayer.state);
+              if (pages.last != (pages[0]) &&
+                  audioPlayer.state == PlayerState.playing) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (_) {
+                    changeIcon(false);
+                  },
+                );
+                print('Last page: ${pages.last} !=');
+              } else {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (_) {
+                    changeIcon(true);
+                  },
+                );
+                print('Last page: ${pages.last} ==');
+              }
+            }
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  playButtonPressed =
+                      audioPlayer.state == PlayerState.paused ? true : false;
+                  changeIcon(playButtonPressed);
+                });
+                onPressThumbnail();
+              },
+              child: Container(
+                height: 70,
+                width: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: pdfThumbnail,
+                    ),
+                    Center(
+                      child: Icon(
+                        iconData,
+                        size: 25,
+                        color: uiColor,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      );
+            );
+          });
     }
 
     //! ---------- !\\

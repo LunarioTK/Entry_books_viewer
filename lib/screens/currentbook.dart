@@ -53,8 +53,6 @@ class _CurrenBookState extends State<CurrenBook> {
   Widget build(BuildContext context) {
     final panelHeightOpen = MediaQuery.of(context).size.height * 0.90;
     MediaQueryData media = MediaQuery.of(context);
-    double height = media.size.height;
-    double width = media.size.width;
     var bookInfo = context.watch<BookInfo>();
     var playTts = Provider.of<TtsPlayer>(context, listen: true);
     //context.watch<TtsPlayer>();
@@ -67,9 +65,6 @@ class _CurrenBookState extends State<CurrenBook> {
 
     void isOpenThenPlay() async {
       try {
-        /*await getText.getText(bookInfo.getPageNumber, widget.file);
-        await playTts.playBook(getText.pdfText);
-        await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);*/
         audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
         if (audioPlayer.source.toString() != '') {
           if (audioPlayer.state == PlayerState.playing) {
@@ -91,6 +86,9 @@ class _CurrenBookState extends State<CurrenBook> {
 
     //final GlobalKey<SfPdfViewerState> pdfViewerKey = GlobalKey();
     PdfViewerController pdfController = PdfViewerController();
+
+    List<int> pagesViewed = [];
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
@@ -126,8 +124,34 @@ class _CurrenBookState extends State<CurrenBook> {
                   widget.file.path,
                   viewerController: pdfController,
                   params: PdfViewerParams(
+                    pageNumber: 6,
                     onInteractionEnd: (details) {
-                      bookInfo.setPageNumber = pdfController.currentPageNumber;
+                      // Clearing list if theres 2 items added
+                      /*if (pagesViewed.length == 2) {
+                        int lastPage = pagesViewed.last;
+                        pagesViewed.clear();
+                        pagesViewed.add(lastPage);
+
+                        print('Last page: ${pagesViewed.last}');
+                        print('Length: ${pagesViewed.length}');
+                      }*/
+
+                      if (pagesViewed.isEmpty) {
+                        pagesViewed.add(pdfController.currentPageNumber);
+                        bookInfo
+                            .setStreamPages(pdfController.currentPageNumber);
+                        bookInfo.setPageNumber =
+                            pdfController.currentPageNumber;
+                      } else {
+                        if (!pagesViewed
+                            .contains(pdfController.currentPageNumber)) {
+                          pagesViewed.add(pdfController.currentPageNumber);
+                          bookInfo
+                              .setStreamPages(pdfController.currentPageNumber);
+                          bookInfo.setPageNumber =
+                              pdfController.currentPageNumber;
+                        }
+                      }
                     },
                     layoutPages: (viewSize, pages) {
                       List<Rect> rect = [];
