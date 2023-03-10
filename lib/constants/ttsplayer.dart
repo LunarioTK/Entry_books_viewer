@@ -152,6 +152,19 @@ class _TTSPlayerState extends State<TTSPlayer> {
       }),
     );
 
+    // Audio player State
+    _playerStateChangeSubscription =
+        audioPlayer.onPlayerStateChanged.listen((state) {
+      setState(() {
+        _playerState = state;
+        if (state == PlayerState.playing) {
+          changeIcon(true);
+        } else {
+          changeIcon(false);
+        }
+      });
+    });
+
     // Explain page with ChatGpt
     void showResult(String? text) {
       showDialog(
