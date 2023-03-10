@@ -46,6 +46,7 @@ class _CurrenBookState extends State<CurrenBook> {
     super.dispose();
     //playTts.setIsAudioLoaded = false;
     audioPlayer.release();
+    audioPlayer.dispose();
   }
 
   @override
@@ -55,7 +56,8 @@ class _CurrenBookState extends State<CurrenBook> {
     double height = media.size.height;
     double width = media.size.width;
     var bookInfo = context.watch<BookInfo>();
-    var playTts = context.watch<TtsPlayer>();
+    var playTts = Provider.of<TtsPlayer>(context, listen: true);
+    //context.watch<TtsPlayer>();
 
     // Sets audio loaded to false when current book closed
     // This is called on dispose
@@ -65,9 +67,18 @@ class _CurrenBookState extends State<CurrenBook> {
 
     void isOpenThenPlay() async {
       try {
-        await getText.getText(bookInfo.getPageNumber, widget.file);
+        /*await getText.getText(bookInfo.getPageNumber, widget.file);
         await playTts.playBook(getText.pdfText);
-        await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+        await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);*/
+        audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+        if (audioPlayer.source.toString() != '') {
+          audioPlayer.seek(playTts.getPosition!);
+        } else {
+          await getText.getText(bookInfo.getPageNumber, widget.file);
+          await playTts.playBook(getText.pdfText);
+          audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+        }
+        //audioPlayer.resume();
         playTts.setIsAudioLoaded = true;
       } catch (e) {
         print("Couldn't play audiobook");
@@ -92,6 +103,7 @@ class _CurrenBookState extends State<CurrenBook> {
               child: TTSPlayer(
                 file: widget.file,
                 panelController: panelController,
+                audioPlayer: audioPlayer,
               ),
             ),
           ),

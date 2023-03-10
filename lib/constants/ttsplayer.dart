@@ -18,17 +18,21 @@ import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class TTSPlayer extends StatefulWidget {
-  PanelController panelController = PanelController();
   File file;
-  TTSPlayer({super.key, required this.file, required this.panelController});
+  AudioPlayer audioPlayer = AudioPlayer();
+  PanelController panelController = PanelController();
+  TTSPlayer(
+      {super.key,
+      required this.file,
+      required this.panelController,
+      required this.audioPlayer});
 
   @override
   State<TTSPlayer> createState() => _TTSPlayerState();
 }
 
 class _TTSPlayerState extends State<TTSPlayer> {
-  AudioPlayer audioPlayer = AudioPlayer();
-  TtsPlayer playTts = TtsPlayer();
+  AudioPlayer get audioPlayer => widget.audioPlayer;
 
   late final render.PdfDocumentLoader pdfThumbnail =
       render.PdfDocumentLoader.openFile(
@@ -45,7 +49,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
   IconData iconData = Icons.play_arrow_rounded;
 
   PlayerState? _playerState;
-  Duration? _duration;
+  Duration _duration = const Duration();
   Duration? _position;
 
   StreamSubscription? _durationSubscription;
@@ -53,10 +57,17 @@ class _TTSPlayerState extends State<TTSPlayer> {
   StreamSubscription? _playerCompleteSubscription;
   StreamSubscription? _playerStateChangeSubscription;
 
-  String get _durationText => _duration?.toString().split('.').first ?? '';
+  //String get _durationText => _duration?.toString().split('.').first ?? '';
 
-  String get _positionText => _position?.toString().split('.').first ?? '';
+  String get _positionText {
+    if (_duration.inHours >= const Duration(hours: 1).inHours) {
+      return _position?.toString().split('.').first ?? '';
+    } else {
+      return _position?.toString().split('.').first.substring(2, 7) ?? '';
+    }
+  }
 
+  // _position?.toString().split('.').first.substring(2, 7)
   bool get _isPlaying => _playerState == PlayerState.playing;
 
   bool get _isPaused => _playerState == PlayerState.paused;
@@ -78,7 +89,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     //audioPlayer.seek(Duration.zero);
     audioPlayer.getDuration().then(
           (value) => setState(() {
-            _duration = value;
+            _duration = value!;
           }),
         );
     audioPlayer.getCurrentPosition().then(
@@ -86,7 +97,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
             _position = value;
           }),
         );
-    _initStreams();
+    //_initStreams();
   }
 
   @override
@@ -129,8 +140,19 @@ class _TTSPlayerState extends State<TTSPlayer> {
     var bookInfo = context.watch<BookInfo>();
     var isPanelOpen = Provider.of<MyPanelState>(context, listen: false);
 
-    //String? text;
+    //Duration getPosition = playTts.getPosition!;
 
+    //String? text
+
+    // Get position
+    _positionSubscription = audioPlayer.onPositionChanged.listen(
+      (p) => setState(() {
+        _position = p;
+        playTts.setPosition = p;
+      }),
+    );
+
+    // Explain page with ChatGpt
     void showResult(String? text) {
       showDialog(
           context: context,
@@ -163,6 +185,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
           });
     }
 
+    // Test for azure ai voice
     void onPressThumbnailAzure(String text) async {
       http.Response response = await TextToSpeechApi.textToSpeech(text);
       final dir = await getTemporaryDirectory();
@@ -175,6 +198,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       await audioPlayer.play(DeviceFileSource(file.path));
     }
 
+    // When you press the play button on tts player
     void onPressThumbnail() async {
       await getText.getText(bookInfo.getPageNumber, widget.file);
 
@@ -191,7 +215,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
       playTts.audioPlayer.getDuration();
       if (_isPlaying == false) {
-        if (_duration != null && audioPlayer.source != null) {
+        if (audioPlayer.source != null) {
           _play();
         } else {
           await playTts.playBook(getText.pdfText);
@@ -216,7 +240,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
         },
         child: Container(
           height: 70,
-          width: 60,
+          width: 50,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -228,7 +252,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
               Center(
                 child: Icon(
                   iconData,
-                  size: 30,
+                  size: 25,
                   color: uiColor,
                 ),
               ),
@@ -258,7 +282,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
               leading: Padding(
                 padding: height <= 600
                     ? const EdgeInsets.only(bottom: 5)
-                    : const EdgeInsets.only(),
+                    : const EdgeInsets.only(top: 5, bottom: 5),
                 child: pdfTumbnail(),
               ),
               title: const Text(
@@ -272,13 +296,15 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 _positionText,
                 style: const TextStyle(
                   color: Colors.white,
+                  fontSize: 13,
                 ),
               ),
               trailing: IconButton(
                 onPressed: (() async {
-                  getText.getText(bookInfo.getPageNumber, widget.file);
+                  await getText.getText(bookInfo.getPageNumber, widget.file);
                   await getResponse.getResponse(getText.pdfText);
                   showResult(getResponse.chatResponse);
+                  //print(playTts.getPosition);
                 }),
                 color: Colors.white,
                 iconSize: 30,
@@ -292,19 +318,20 @@ class _TTSPlayerState extends State<TTSPlayer> {
   }
 
   void _initStreams() {
+    //var playTts = context.watch<TtsPlayer>();
     _durationSubscription = audioPlayer.onDurationChanged.listen((duration) {
       setState(() {
         _duration = duration;
-        playTts.setDuration = duration;
+        //playTts.setDuration = duration;
       });
     });
 
-    _positionSubscription = audioPlayer.onPositionChanged.listen(
+    /*_positionSubscription = audioPlayer.onPositionChanged.listen(
       (p) => setState(() {
         _position = p;
         playTts.setPosition = p;
       }),
-    );
+    );*/
 
     _playerCompleteSubscription = audioPlayer.onPlayerComplete.listen((event) {
       setState(() {
@@ -312,15 +339,18 @@ class _TTSPlayerState extends State<TTSPlayer> {
         _position = Duration.zero;
         playButtonPressed = _isPaused ? true : false;
         changeIcon(playButtonPressed);
-        playTts.setPlayerState = PlayerState.completed;
+        //playTts.setPlayerState = PlayerState.completed;
       });
     });
 
     _playerStateChangeSubscription =
-        audioPlayer.onPlayerStateChanged.listen((state) {
+        audioPlayer.onPlayerStateChanged.listen((state) async {
+      var positionOnStateChange = await audioPlayer.getCurrentPosition() ??
+          const Duration(milliseconds: 0);
       setState(() {
         _playerState = state;
-        playTts.setPlayerState = state;
+        //playTts.setPosition = positionOnStateChange;
+        //playTts.setPlayerState = state;
       });
     });
   }
@@ -336,6 +366,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
   Future<void> _pause() async {
     await audioPlayer.pause();
+    //print(playTts.getPosition);
     setState(() => _playerState = PlayerState.paused);
   }
 
