@@ -116,9 +116,22 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     );
   }
 
+  /*void playAudioIfOpen() async {
+    GetText getText = GetText();
+    TtsPlayer playTts = TtsPlayer();
+    BookInfo bookInfo = BookInfo();
+
+    if (panelController.isPanelOpen) {
+      await getText.getText(bookInfo.getPageNumber, bookInfo.getFile);
+      await playTts.playBook(getText.pdfText);
+      await player.setSourceDeviceFile(playTts.getAudioFile.path);
+    }
+  }*/
+
   @override
   void initState() {
     super.initState();
+    //playAudioIfOpen();
     // Use initial values from player
     _playerState = player.state;
     /*player.getDuration().then(
@@ -160,24 +173,24 @@ class _PlayerWidgetState extends State<PlayerWidget> {
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       children: <Widget>[
-        const SizedBox(height: 12),
         buildHandle(),
-        buildPlayer(panelHeight),
+        buildPlayer(panelHeight, context),
       ],
     );
   }
 
   // Trace
-  Widget buildHandle() => GestureDetector(
-        onTap: (() => togglePanel()),
-        child: Center(
+  Widget buildHandle() => Center(
+        child: TextButton(
+          onPressed: () => togglePanel(),
           child: Container(
-              width: 40,
-              height: 7,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-              )),
+            width: 40,
+            height: 6,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade300,
+            ),
+          ),
         ),
       );
 
@@ -187,95 +200,69 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         : panelController.open();
   }
 
-  Widget buildPlayer(double heightSize) {
-    return Padding(
-      padding: EdgeInsets.only(
-          top: heightSize < 780 ? heightSize * 0.05 : heightSize * 0.10,
-          bottom: heightSize * 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          const BookThumbnail(),
-          SizedBox(height: heightSize <= 600 ? 10 : 30),
-          const Text(
-            'Book Name',
-            style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text('Author Name'),
-          SizedBox(height: heightSize <= 600 ? 10 : 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              pauseButton(),
-              playButton(),
-              stopButton(),
+  Widget buildPlayer(double heightSize, BuildContext context) {
+    return Consumer<TtsPlayer>(
+      builder: (context, ttsPlayer, _) {
+        return Padding(
+          padding: EdgeInsets.only(
+              top: (heightSize < 780 && heightSize >= 600)
+                  ? heightSize * 0.02
+                  : heightSize * 0.05,
+              bottom: heightSize * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const BookThumbnail(),
+              SizedBox(height: heightSize <= 600 ? 10 : 30),
+              const Text(
+                'Book Name',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text('Author Name'),
+              SizedBox(height: heightSize <= 600 ? 10 : 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  pauseButton(),
+                  playButton(),
+                  stopButton(),
+                ],
+              ),
+              Padding(
+                padding: heightSize <= 600
+                    ? const EdgeInsets.only(left: 40, right: 40)
+                    : const EdgeInsets.only(left: 50, right: 50, top: 30),
+                child: ProgressBar(
+                  total: _duration ?? Duration.zero,
+                  baseBarColor: Colors.grey,
+                  thumbColor: Colors.black,
+                  progressBarColor: Colors.black,
+                  onSeek: (time) {
+                    player.seek(
+                        Duration(milliseconds: time.inMilliseconds.round()));
+                  },
+                  progress: Duration(
+                    milliseconds: (_position != null &&
+                            _duration != null &&
+                            _position!.inMilliseconds > 0 &&
+                            _position!.inMilliseconds <
+                                _duration!.inMilliseconds)
+                        ? _position!.inMilliseconds
+                        : 0,
+                  ),
+                ),
+              ),
             ],
           ),
-          Padding(
-            padding: heightSize <= 600
-                ? const EdgeInsets.only(left: 40, right: 40)
-                : const EdgeInsets.only(left: 50, right: 50, top: 30),
-            child: ProgressBar(
-              total: _duration ?? Duration.zero,
-              baseBarColor: Colors.grey,
-              thumbColor: Colors.black,
-              progressBarColor: Colors.black,
-              onSeek: (time) {
-                player
-                    .seek(Duration(milliseconds: time.inMilliseconds.round()));
-              },
-              progress: Duration(
-                milliseconds: (_position != null &&
-                        _duration != null &&
-                        _position!.inMilliseconds > 0 &&
-                        _position!.inMilliseconds < _duration!.inMilliseconds)
-                    ? _position!.inMilliseconds
-                    : 0,
-              ),
-            ),
-          ),
-
-          /*Slider(
-            activeColor: Colors.green.shade800,
-            onChanged: (v) {
-              debouncer.add(v);
-            },
-            value: _sliderValue,
-          ),*/
-
-          /*Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _position != null
-                      ? _positionText
-                      : _duration != null
-                          ? _durationText
-                          : '',
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-                Text(
-                  _position != null
-                      ? _durationText
-                      : _duration != null
-                          ? _durationText
-                          : '',
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-              ],
-            ),
-          ),*/
-        ],
-      ),
+        );
+      },
     );
   }
 
