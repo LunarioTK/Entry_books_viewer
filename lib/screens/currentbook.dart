@@ -95,7 +95,7 @@ class _CurrenBookState extends State<CurrenBook> {
         child: SlidingUpPanel(
           controller: panelController,
           maxHeight: panelHeightOpen,
-          onPanelClosed: () => playTts.setIsAudioLoaded = false,
+          //onPanelClosed: () => playTts.setIsAudioLoaded = false,
           onPanelOpened: () => isOpenThenPlay(),
           key: const Key('Sliding_panel'),
           collapsed: Align(
@@ -136,22 +136,19 @@ class _CurrenBookState extends State<CurrenBook> {
                         print('Length: ${pagesViewed.length}');
                       }*/
 
-                      if (pagesViewed.isEmpty) {
-                        pagesViewed.add(pdfController.currentPageNumber);
-                        bookInfo
-                            .setStreamPages(pdfController.currentPageNumber);
-                        bookInfo.setPageNumber =
-                            pdfController.currentPageNumber;
-                      } else {
-                        if (!pagesViewed
+                      //if (pagesViewed.isEmpty) {
+                      //pagesViewed.add(pdfController.currentPageNumber);
+                      bookInfo.setStreamPages(pdfController.currentPageNumber);
+                      //} else {
+                      /*if (!pagesViewed
                             .contains(pdfController.currentPageNumber)) {
                           pagesViewed.add(pdfController.currentPageNumber);
                           bookInfo
                               .setStreamPages(pdfController.currentPageNumber);
-                          bookInfo.setPageNumber =
-                              pdfController.currentPageNumber;
-                        }
-                      }
+                        //}
+                      }*/
+
+                      bookInfo.setPageNumber = pdfController.currentPageNumber;
                     },
                     layoutPages: (viewSize, pages) {
                       List<Rect> rect = [];

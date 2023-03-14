@@ -33,6 +33,7 @@ class TTSPlayer extends StatefulWidget {
 
 class _TTSPlayerState extends State<TTSPlayer> {
   AudioPlayer get audioPlayer => widget.audioPlayer;
+  List<int> pages = [];
 
   late final render.PdfDocumentLoader pdfThumbnail =
       render.PdfDocumentLoader.openFile(
@@ -270,7 +271,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
     // Pdf Tumbnail
     // Added a Stream so i can listen for changes on the stream
-    List<int> pages = [];
     Widget pdfTumbnail() {
       return StreamBuilder(
           stream: bookInfo.getPagesStream.stream,
@@ -283,7 +283,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 pages.clear();
                 pages.add(lastPage);
               }
-              print(audioPlayer.state);
+              //print(audioPlayer.state);
               if (pages.last != (pages[0]) &&
                   audioPlayer.state == PlayerState.playing) {
                 WidgetsBinding.instance.addPostFrameCallback(
@@ -291,14 +291,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
                     changeIcon(false);
                   },
                 );
-                print('Last page: ${pages.last} !=');
-              } else {
-                WidgetsBinding.instance.addPostFrameCallback(
-                  (_) {
-                    changeIcon(true);
-                  },
-                );
-                print('Last page: ${pages.last} ==');
+                //print('Last page: ${pages.last} !=');
               }
             }
 
@@ -419,8 +412,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
     _playerStateChangeSubscription =
         audioPlayer.onPlayerStateChanged.listen((state) async {
-      var positionOnStateChange = await audioPlayer.getCurrentPosition() ??
-          const Duration(milliseconds: 0);
       setState(() {
         _playerState = state;
         //playTts.setPosition = positionOnStateChange;
