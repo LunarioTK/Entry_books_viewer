@@ -33,6 +33,10 @@ class TTSPlayer extends StatefulWidget {
 
 class _TTSPlayerState extends State<TTSPlayer> {
   AudioPlayer get audioPlayer => widget.audioPlayer;
+  late BookInfo bookInfoDispose;
+  //StreamController<int>? streamController;
+  var pageNumberPlaying = 0;
+  bool isButtonPlay = false;
   List<int> pages = [];
 
   late final render.PdfDocumentLoader pdfThumbnail =
@@ -111,11 +115,18 @@ class _TTSPlayerState extends State<TTSPlayer> {
   }
 
   @override
+  void didChangeDependencies() {
+    bookInfoDispose = Provider.of<BookInfo>(context);
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
     _durationSubscription?.cancel();
     _positionSubscription?.cancel();
     _playerCompleteSubscription?.cancel();
     _playerStateChangeSubscription?.cancel();
+    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -123,8 +134,10 @@ class _TTSPlayerState extends State<TTSPlayer> {
     setState(() {
       if (isButtonPressed) {
         iconData = Icons.pause;
+        //isButtonPlay = true;
       } else {
         iconData = Icons.play_arrow_rounded;
+        //isButtonPlay = false;
       }
     });
   }
@@ -140,6 +153,10 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
     var bookInfo = context.watch<BookInfo>();
     var isPanelOpen = Provider.of<MyPanelState>(context, listen: false);
+
+    void closeStream() {
+      bookInfo.disposeStream();
+    }
 
     // Current position
     _positionSubscription = audioPlayer.onPositionChanged.listen(
@@ -211,6 +228,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     // When you press the play button on tts player
     void onPressThumbnail() async {
       await getText.getText(bookInfo.getPageNumber, widget.file);
+      pageNumberPlaying = bookInfo.getPageNumber;
 
       // If audio has finished
       playTts.audioPlayer.onPlayerComplete.listen((event) {
@@ -226,12 +244,13 @@ class _TTSPlayerState extends State<TTSPlayer> {
       playTts.audioPlayer.getDuration();
 
       if (_isPlaying == false) {
-        if (audioPlayer.source != null) {
-          _play();
-        } else {
+        if (iconData == Icons.play_arrow_rounded ||
+            audioPlayer.source == null) {
           await playTts.playBook(getText.pdfText);
           audioPlayer.play(DeviceFileSource(playTts.getAudioFile.path));
           setState(() => _playerState = PlayerState.playing);
+        } else if (audioPlayer.source != null) {
+          _play();
         }
       } else {
         _pause();
@@ -284,7 +303,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
                 pages.add(lastPage);
               }
               //print(audioPlayer.state);
-              if (pages.last != (pages[0]) &&
+              if (pageNumberPlaying != pages.last &&
                   audioPlayer.state == PlayerState.playing) {
                 WidgetsBinding.instance.addPostFrameCallback(
                   (_) {
@@ -292,6 +311,13 @@ class _TTSPlayerState extends State<TTSPlayer> {
                   },
                 );
                 //print('Last page: ${pages.last} !=');
+              } else if (pageNumberPlaying == pages.last &&
+                  audioPlayer.state == PlayerState.playing) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (_) {
+                    changeIcon(true);
+                  },
+                );
               }
             }
 
