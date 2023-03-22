@@ -360,6 +360,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
                               width: 15,
                               child: CircularProgressIndicator(
                                 color: Colors.black,
+                                strokeWidth: 3,
                               ),
                             )
                           : Icon(
