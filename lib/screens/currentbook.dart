@@ -6,6 +6,7 @@ import 'package:entry_books/constants/panelplayer.dart';
 import 'package:entry_books/constants/ttsplayer.dart';
 import 'package:entry_books/services/bookinfo.dart';
 import 'package:entry_books/services/gettext.dart';
+import 'package:entry_books/services/panelstate.dart';
 import 'package:entry_books/services/playtts.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_render/pdf_render_widgets.dart';
@@ -55,6 +56,7 @@ class _CurrenBookState extends State<CurrenBook> {
     MediaQueryData media = MediaQuery.of(context);
     var bookInfo = context.watch<BookInfo>();
     var playTts = Provider.of<TtsPlayer>(context, listen: true);
+    var panelState = context.watch<MyPanelState>();
     //context.watch<TtsPlayer>();
 
     // Sets audio loaded to false when current book closed
@@ -75,10 +77,11 @@ class _CurrenBookState extends State<CurrenBook> {
         } else {
           await getText.getText(bookInfo.getPageNumber, widget.file);
           await playTts.playBook(getText.pdfText);
-          audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+          await audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
         }
         //audioPlayer.resume();
         playTts.setIsAudioLoaded = true;
+        panelState.setPanelOpen = true;
       } catch (e) {
         print("Couldn't play audiobook");
       }
@@ -95,7 +98,7 @@ class _CurrenBookState extends State<CurrenBook> {
         child: SlidingUpPanel(
           controller: panelController,
           maxHeight: panelHeightOpen,
-          //onPanelClosed: () => playTts.setIsAudioLoaded = false,
+          onPanelClosed: () => panelState.setPanelOpen = false,
           onPanelOpened: () => isOpenThenPlay(),
           key: const Key('Sliding_panel'),
           collapsed: Align(

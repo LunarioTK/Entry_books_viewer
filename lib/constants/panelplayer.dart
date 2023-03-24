@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:entry_books/services/bookinfo.dart';
+import 'package:entry_books/services/panelstate.dart';
 import 'package:entry_books/services/playtts.dart';
 import 'package:pdf_render/pdf_render_widgets.dart';
 import 'package:provider/provider.dart';
@@ -13,16 +14,17 @@ import 'package:flutter/material.dart';
 
 class PlayerWidget extends StatefulWidget {
   final AudioPlayer player;
-  final bool isAudioLoaded;
+  late bool? isAudioLoaded;
   final ScrollController controller;
   final PanelController panelController;
 
-  const PlayerWidget(
-      {super.key,
-      required this.player,
-      required this.controller,
-      required this.isAudioLoaded,
-      required this.panelController});
+  PlayerWidget({
+    super.key,
+    required this.player,
+    required this.controller,
+    this.isAudioLoaded,
+    required this.panelController,
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -157,36 +159,39 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   @override
   Widget build(BuildContext context) {
     final panelHeight = MediaQuery.of(context).size.height;
+    var panelState = context.watch<MyPanelState>().getPanelOpen;
     return ListView(
       controller: widget.controller,
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       children: <Widget>[
-        buildHandle(),
+        const SizedBox(height: 15),
+        buildHandle(panelState),
         buildPlayer(panelHeight, context),
       ],
     );
   }
 
   // Trace
-  Widget buildHandle() => Center(
-        child: TextButton(
-          onPressed: () => togglePanel(),
-          child: Container(
-            width: 40,
-            height: 6,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.grey.shade300,
-            ),
+  Widget buildHandle(var isPanelOpen) {
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          panelController.isPanelOpen || isPanelOpen
+              ? panelController.close()
+              : panelController.open();
+        },
+        child: Container(
+          width: 40,
+          height: 6,
+          alignment: Alignment.topCenter,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.grey.shade300,
           ),
         ),
-      );
-
-  void togglePanel() {
-    panelController.isPanelOpen
-        ? panelController.close()
-        : panelController.open();
+      ),
+    );
   }
 
   Widget buildPlayer(double heightSize, BuildContext context) {
@@ -195,8 +200,8 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         return Padding(
           padding: EdgeInsets.only(
               top: (heightSize < 780 && heightSize >= 600)
-                  ? heightSize * 0.05
-                  : heightSize * 0.07,
+                  ? heightSize * 0.09
+                  : heightSize * 0.12,
               bottom: heightSize * 0.05),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,

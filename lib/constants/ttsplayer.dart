@@ -33,6 +33,7 @@ class TTSPlayer extends StatefulWidget {
 
 class _TTSPlayerState extends State<TTSPlayer> {
   AudioPlayer get audioPlayer => widget.audioPlayer;
+  var streamClose = BookInfo();
   StreamController<int>? streamController;
   var pageNumberPlaying = 0;
   bool isButtonPlay = false;
@@ -122,6 +123,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     _positionSubscription?.cancel();
     _playerCompleteSubscription?.cancel();
     _playerStateChangeSubscription?.cancel();
+    streamClose.disposeStream();
     audioPlayer.dispose();
     super.dispose();
   }
@@ -144,6 +146,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
   Widget build(BuildContext context) {
     GetText getText = GetText();
     TtsPlayer playTts = context.watch<TtsPlayer>();
+    var panelState = context.watch<MyPanelState>();
     GetResponse getResponse = GetResponse();
     MediaQueryData media = MediaQuery.of(context);
     double height = media.size.height;
@@ -239,7 +242,9 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
       if (_isPlaying == false || pageChangedTtsAvailable) {
         if (pageChangedTtsAvailable || audioPlayer.source == null) {
-          _pause();
+          if (_isPlaying) {
+            _pause();
+          }
           audioPlayer.release();
           await playTts.playBook(getText.pdfText);
           setState(() {
@@ -300,7 +305,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     // Added a Stream so i can listen for changes on the stream
     Widget pdfTumbnail() {
       return StreamBuilder(
-          stream: bookInfo.getPagesStream.stream,
+          stream: bookInfo.getPagesStream,
           initialData: bookInfo.getPageNumber,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
@@ -365,8 +370,9 @@ class _TTSPlayerState extends State<TTSPlayer> {
                             )
                           : Icon(
                               iconData,
-                              size: 25,
+                              size: 34,
                               color: uiColor,
+                              weight: 2,
                             ),
                     ),
                   ],
@@ -384,7 +390,15 @@ class _TTSPlayerState extends State<TTSPlayer> {
         color: uiColor,
         borderRadius: BorderRadius.circular(10),
         child: GestureDetector(
-          onTap: () => widget.panelController.open(),
+          onTap: () {
+            if (panelState.getPanelOpen == false) {
+              widget.panelController.open();
+              panelState.setPanelOpen = true;
+            } else {
+              widget.panelController.close();
+              panelState.setPanelOpen = false;
+            }
+          },
           child: Container(
             width: double.infinity,
             height: height * 0.15,
