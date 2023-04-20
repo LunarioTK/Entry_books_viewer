@@ -34,7 +34,6 @@ class PlayerWidget extends StatefulWidget {
 
 class _PlayerWidgetState extends State<PlayerWidget> {
   final debouncer = PublishSubject<double>();
-  //final double _value = 0.0;
   double _sliderValue = 0.0;
 
   PlayerState? _playerState;
@@ -318,17 +317,24 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   }
 
   Future<void> _play() async {
+    var pagePlaying = Provider.of<BookInfo>(context, listen: false);
     final position = _position;
     if (position != null && position.inMilliseconds > 0) {
       await player.seek(position);
     }
     await player.resume();
-    setState(() => _playerState = PlayerState.playing);
+    setState(() {
+      _playerState = PlayerState.playing;
+      pagePlaying.setPagePlaying = pagePlaying.getPageNumber;
+      //player.state = PlayerState.playing;
+    });
   }
 
   Future<void> _pause() async {
     await player.pause();
-    setState(() => _playerState = PlayerState.paused);
+    setState(() {
+      _playerState = PlayerState.paused;
+    });
   }
 
   Future<void> _stop() async {

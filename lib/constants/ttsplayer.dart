@@ -19,6 +19,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class TTSPlayer extends StatefulWidget {
   File file;
+  late bool? isAudioLoaded;
   AudioPlayer audioPlayer = AudioPlayer();
   PanelController panelController = PanelController();
   TTSPlayer(
@@ -93,7 +94,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     super.initState();
     // Use initial values from player
     _playerState = audioPlayer.state;
-    _pause();
+    //_pause();
     //audioPlayer.seek(Duration.zero);
     audioPlayer.getDuration().then(
           (value) => setState(() {
@@ -105,7 +106,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
             _position = value;
           }),
         );
-    //_initStreams();
+    _initStreams();
   }
 
   @override
@@ -224,8 +225,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
 
     // When you press the play button on tts player
     void onPressThumbnail() async {
+      var pagePlaying = Provider.of<BookInfo>(context, listen: false);
       await getText.getText(bookInfo.getPageNumber, widget.file);
-      pageNumberPlaying = bookInfo.getPageNumber;
 
       // If audio has finished
       playTts.audioPlayer.onPlayerComplete.listen((event) {
@@ -241,7 +242,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
       playTts.audioPlayer.getDuration();
 
       if (_isPlaying == false || pageChangedTtsAvailable) {
-        if (pageChangedTtsAvailable || audioPlayer.source == null) {
+        if (audioPlayer.source == null) {
           if (_isPlaying) {
             _pause();
           }
@@ -255,6 +256,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
             playButtonPressed = false;
           });
           setState(() => _playerState = PlayerState.playing);
+          pagePlaying.setPagePlaying = pagePlaying.getPageNumber;
         } else if (pageChangedTtsAvailable == false &&
             audioPlayer.source != null) {
           _play();
@@ -310,6 +312,8 @@ class _TTSPlayerState extends State<TTSPlayer> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               pages.add(snapshot.data!);
+              pageNumberPlaying =
+                  bookInfo.getPagePlaying ?? bookInfo.getPageNumber;
 
               if (pages.length > 2) {
                 int lastPage = pages.last;
@@ -450,6 +454,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     _durationSubscription = audioPlayer.onDurationChanged.listen((duration) {
       setState(() {
         _duration = duration;
+        //audioPlayer.state = PlayerState.playing;
         //playTts.setDuration = duration;
       });
     });
@@ -457,7 +462,6 @@ class _TTSPlayerState extends State<TTSPlayer> {
     /*_positionSubscription = audioPlayer.onPositionChanged.listen(
       (p) => setState(() {
         _position = p;
-        playTts.setPosition = p;
       }),
     );*/
 
@@ -482,12 +486,16 @@ class _TTSPlayerState extends State<TTSPlayer> {
   }
 
   Future<void> _play() async {
+    var pagePlaying = Provider.of<BookInfo>(context, listen: false);
     final position = _position;
     if (position != null && position.inMilliseconds > 0) {
       await audioPlayer.seek(position);
     }
     await audioPlayer.resume();
-    setState(() => _playerState = PlayerState.playing);
+    setState(() {
+      _playerState = PlayerState.playing;
+      pagePlaying.setPagePlaying = pagePlaying.getPageNumber;
+    });
   }
 
   Future<void> _pause() async {

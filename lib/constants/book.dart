@@ -22,6 +22,7 @@ class Book extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () {
+              bookInfo.setFile = file;
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => CurrenBook(file: file),

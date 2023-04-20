@@ -21,7 +21,7 @@ class _HomeState extends State<Home> {
   File file = File('');
   List<int> indexs = [];
   final _box = Hive.box('books');
-  BookViewModel bVM = BookViewModel();
+  HiveViewModel bVM = HiveViewModel();
 
   @override
   void initState() {
@@ -50,24 +50,22 @@ class _HomeState extends State<Home> {
       body: SafeArea(
         child: Stack(
           children: [
-            file.path == ''
-                ? Container()
-                : GridView.builder(
-                    clipBehavior: Clip.none,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: height <= 600 ? 1 / 3 : 2 / 3,
-                    ),
-                    itemCount: bVM.bookList.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final book = bVM.bookList[index];
-                      File bookFile = File(book.filePath);
-                      return Book(
-                        file: bookFile,
-                        index: index,
-                      );
-                    },
-                  ),
+            GridView.builder(
+              clipBehavior: Clip.none,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: height <= 600 ? 1 / 3 : 2 / 3,
+              ),
+              itemCount: bVM.bookList.length,
+              itemBuilder: (BuildContext context, int index) {
+                final book = bVM.bookList[index];
+                File bookFile = File(book.filePath);
+                return Book(
+                  file: bookFile,
+                  index: index,
+                );
+              },
+            ),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -117,5 +115,3 @@ class _HomeState extends State<Home> {
     );
   }
 }
-
-//'assets/bookwithapplebgrm.png'
