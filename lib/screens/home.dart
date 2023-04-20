@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:entry_books/constants/book.dart';
 import 'package:entry_books/constants/uicolor.dart';
 import 'package:entry_books/services/bookinfo.dart';
+import 'package:entry_books/services/hive_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
@@ -15,7 +17,23 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  int count = 0;
   File file = File('');
+  List<int> indexs = [];
+  final _box = Hive.box('books');
+  BookViewModel bVM = BookViewModel();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    if (_box.get("BOOKLIST") != null) {
+      bVM.loadData();
+    } else {
+      print('Empty');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +44,6 @@ class _HomeState extends State<Home> {
 
     double ratio = media.size.height / media.size.width;
     late FilePickerResult? result;
-    int count = 0;
 
     return Scaffold(
       backgroundColor: uiColor,
@@ -41,12 +58,16 @@ class _HomeState extends State<Home> {
                       crossAxisCount: 3,
                       childAspectRatio: height <= 600 ? 1 / 3 : 2 / 3,
                     ),
-                    itemCount: bookInfo.allBooks.length,
+                    itemCount: bVM.bookList.length,
                     itemBuilder: (BuildContext context, int index) {
+                      final book = bVM.bookList[index];
+                      File bookFile = File(book.filePath);
                       return Book(
-                        file: bookInfo.allBooks[index].file,
+                        file: bookFile,
+                        index: index,
                       );
-                    }),
+                    },
+                  ),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -62,6 +83,10 @@ class _HomeState extends State<Home> {
                     );
                     if (result != null) {
                       file = File(result!.files.single.path!);
+                      if (!bVM.bookList.contains({'', file.path})) {
+                        bVM.addBooks(title: '', filePath: file.path);
+                        bVM.updateData();
+                      }
                       bookInfo.setFile = file;
                       count++;
                       bookInfo.setbooksAdded = count;

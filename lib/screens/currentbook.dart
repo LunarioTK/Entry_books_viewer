@@ -24,7 +24,7 @@ class CurrenBook extends StatefulWidget {
 
 class _CurrenBookState extends State<CurrenBook> {
   final panelController = PanelController();
-  AudioPlayer audioPlayer = AudioPlayer();
+  final AudioPlayer audioPlayer = AudioPlayer();
   PlayerState? _playerState;
   GetText getText = GetText();
   TtsPlayer playTts = TtsPlayer();
@@ -48,6 +48,7 @@ class _CurrenBookState extends State<CurrenBook> {
     //playTts.setIsAudioLoaded = false;
     audioPlayer.release();
     audioPlayer.dispose();
+    //bookInfo.disposeStream();
   }
 
   @override
@@ -67,7 +68,7 @@ class _CurrenBookState extends State<CurrenBook> {
 
     void isOpenThenPlay() async {
       try {
-        audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
+        //audioPlayer.setSourceDeviceFile(playTts.getAudioFile.path);
         if (playTts.getAudioFile.path.isNotEmpty) {
           if (audioPlayer.state == PlayerState.playing) {
             audioPlayer.resume();
@@ -127,7 +128,7 @@ class _CurrenBookState extends State<CurrenBook> {
                   widget.file.path,
                   viewerController: pdfController,
                   params: PdfViewerParams(
-                    pageNumber: 6,
+                    pageNumber: 1,
                     onInteractionEnd: (details) {
                       bookInfo.setStreamPages(pdfController.currentPageNumber);
                       bookInfo.setPageNumber = pdfController.currentPageNumber;

@@ -2,16 +2,19 @@ import 'dart:io';
 
 import 'package:entry_books/constants/uicolor.dart';
 import 'package:entry_books/screens/currentbook.dart';
+import 'package:entry_books/services/bookinfo.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_render/pdf_render_widgets.dart';
+import 'package:provider/provider.dart';
 
 class Book extends StatelessWidget {
   File file;
-  Book({super.key, required this.file});
+  int? index;
+  Book({super.key, this.index, required this.file});
 
   @override
   Widget build(BuildContext context) {
-    //var bookInfo = context.watch<BookInfo>();
+    var bookInfo = context.watch<BookInfo>();
 
     return Padding(
       padding: const EdgeInsets.all(15.0),
@@ -27,14 +30,12 @@ class Book extends StatelessWidget {
             },
             child: Material(
               elevation: 10,
-              child: Container(
-                child: PdfDocumentLoader.openFile(
-                  file.path,
-                  pageNumber: 1,
-                  pageBuilder: (context, textureBuilder, pageSize) =>
-                      textureBuilder(
-                    size: const Size(80, 120),
-                  ),
+              child: PdfDocumentLoader.openFile(
+                file.path,
+                pageNumber: 1,
+                pageBuilder: (context, textureBuilder, pageSize) =>
+                    textureBuilder(
+                  size: const Size(80, 120),
                 ),
               ),
             ),

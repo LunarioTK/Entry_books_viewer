@@ -123,7 +123,7 @@ class _TTSPlayerState extends State<TTSPlayer> {
     _positionSubscription?.cancel();
     _playerCompleteSubscription?.cancel();
     _playerStateChangeSubscription?.cancel();
-    streamClose.disposeStream();
+    //streamClose.disposeStream();
     audioPlayer.dispose();
     super.dispose();
   }
